@@ -22,12 +22,10 @@ class AutoencoderLayer(tf.keras.layers.Layer):
         x = self._hidden(inputs)
         output_mean = self._mean(x)
         output_std = tf.math.softplus(self._std(x)) + 1e-6
-
         loss = tf.Variable(0.)
         for weight in self._hidden.weights:
             loss.assign(loss + tf.math.reduce_sum(tf.math.square(weight)))
         self.add_loss(loss)
-
         return output_mean, output_std
 
 
@@ -43,14 +41,12 @@ class ConditionalVariationalAutoencoder(tf.keras.Model):
         cat = tf.keras.layers.Concatenate()([x, y])
         z_mean, z_std = self._encoder(cat)
         q_zx = tfp.distributions.Normal(z_mean, z_std)
-
         p_z = tfp.distributions.Normal(
             tf.zeros(z_mean.shape, dtype='float32'),
             tf.ones(z_std.shape, dtype='float32')
         )
         epsilon = p_z.sample((n_samples,))
         z = epsilon * tf.expand_dims(z_std, 0) + tf.expand_dims(z_mean, 0)
-
         y = tf.broadcast_to(y, [n_samples, y.shape[0], y.shape[1]])
         cat = tf.keras.layers.Concatenate()([z, y])
         x_mean, x_std = self._decoder(cat)
@@ -138,23 +134,18 @@ class Bagel:
             print(f'Training Epoch: {epoch + 1}/{epochs}')
             progbar = tf.keras.utils.Progbar(len(dataset) + (0 if validation_kpi is None else len(validation_dataset)),
                                              interval=0.5)
-
             for batch in dataset:
                 y, x, normal = batch
-
                 with tf.GradientTape() as tape:
                     y = tf.keras.layers.Dropout(self._dropout_rate)(y)
                     q_zx, p_xz, z = self._model([x, y])
                     loss = self._m_elbo(x=x, z=z, normal=normal, p_xz=p_xz, q_zx=q_zx, p_z=self._p_z)
                     loss += tf.math.reduce_sum(self._model.losses) * 0.001
-
                 grads = tape.gradient(loss, self._model.trainable_weights)
                 optimizer.apply_gradients(zip(grads, self._model.trainable_weights))
                 progbar.add(1, values=[('loss', loss)])
-
             if validation_kpi is None:
                 continue
-
             for batch in validation_dataset:
                 y, x, normal = batch
                 q_zx, p_xz, z = self._model([x, y])
@@ -163,14 +154,12 @@ class Bagel:
                 progbar.add(1, values=[('val_loss', val_loss)])
 
     def predict(self, kpi: bagel.data.KPI, batch_size: int = 256) -> np.ndarray:
+        print('Testing Epoch')
         kpi = kpi.no_labels()
         dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size)
         dataset = dataset.to_tensorflow()
         dataset = dataset.batch(batch_size)
-
-        print('Testing Epoch')
         progbar = tf.keras.utils.Progbar(len(dataset), interval=0.5)
-
         anomaly_scores = []
         for batch in dataset:
             y, x, normal = batch
@@ -180,6 +169,5 @@ class Bagel:
             log_p_xz = p_xz.log_prob(x).numpy()
             anomaly_scores.extend(-np.mean(log_p_xz[:, :, -1], axis=0))
             progbar.add(1, values=[('test_loss', test_loss)])
-
         anomaly_scores = np.asarray(anomaly_scores, dtype=np.float32)
         return np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
