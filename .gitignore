@@ -1,0 +1,8 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Jetbrains IDE
+.idea/
+
+# Sample outputs and models
+sample/out/

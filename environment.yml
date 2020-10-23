@@ -1,0 +1,10 @@
+name: bagel-tf
+dependencies:
+  - scikit-learn
+  - pandas
+  - cudatoolkit=10.1
+  - cudnn
+  - pip
+  - pip:
+    - tensorflow
+    - tensorflow-probability
