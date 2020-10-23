@@ -15,8 +15,8 @@ class AutoencoderLayer(tf.keras.layers.Layer):
         ])
         for hidden_dim in hidden_dims:
             self._hidden.add(tf.keras.layers.Dense(hidden_dim, activation='relu'))
-        self._mean = tf.keras.layers.Dense(output_dim, activation='relu')
-        self._std = tf.keras.layers.Dense(output_dim, activation='relu')
+        self._mean = tf.keras.layers.Dense(output_dim)
+        self._std = tf.keras.layers.Dense(output_dim)
 
     def call(self, inputs, **kwargs):
         x = self._hidden(inputs)
