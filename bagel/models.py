@@ -8,11 +8,9 @@ from typing import Sequence, Optional
 
 class AutoencoderLayer(tf.keras.layers.Layer):
 
-    def __init__(self, input_dim: int, output_dim: int, hidden_dims: Sequence):
+    def __init__(self, input_dim: int, output_dim: int, hidden_dims: Sequence[int]):
         super().__init__()
-        self._hidden = tf.keras.Sequential([
-            tf.keras.Input(shape=(input_dim,)),
-        ])
+        self._hidden = tf.keras.Sequential([tf.keras.Input(shape=(input_dim,))])
         for hidden_dim in hidden_dims:
             self._hidden.add(
                 tf.keras.layers.Dense(hidden_dim, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.001))
@@ -22,9 +20,9 @@ class AutoencoderLayer(tf.keras.layers.Layer):
 
     def call(self, inputs, **kwargs):
         x = self._hidden(inputs)
-        output_mean = self._mean(x)
-        output_std = tf.math.softplus(self._std(x)) + 1e-6
-        return output_mean, output_std
+        mean = self._mean(x)
+        std = tf.math.softplus(self._std(x)) + 1e-6
+        return mean, std
 
 
 class ConditionalVariationalAutoencoder(tf.keras.Model):
@@ -34,20 +32,17 @@ class ConditionalVariationalAutoencoder(tf.keras.Model):
         self._encoder = encoder
         self._decoder = decoder
 
-    def call(self, inputs, n_samples: int = 1, **kwargs):
-        x, y = inputs[0], inputs[1]
-        cat = tf.keras.layers.Concatenate()([x, y])
-        z_mean, z_std = self._encoder(cat)
+    def call(self, inputs, **kwargs):
+        x, y = tuple(inputs)
+        n_samples = kwargs.get('n_samples', 1)
+        concatted = tf.keras.layers.Concatenate()([x, y])
+        z_mean, z_std = self._encoder(concatted)
         q_zx = tfp.distributions.Normal(z_mean, z_std)
-        p_z = tfp.distributions.Normal(
-            tf.zeros(z_mean.shape, dtype='float32'),
-            tf.ones(z_std.shape, dtype='float32')
-        )
-        epsilon = p_z.sample((n_samples,))
-        z = epsilon * tf.expand_dims(z_std, 0) + tf.expand_dims(z_mean, 0)
+        p_z = tfp.distributions.Normal(tf.zeros(z_mean.shape), tf.ones(z_std.shape))
+        z = p_z.sample((n_samples,)) * tf.expand_dims(z_std, 0) + tf.expand_dims(z_mean, 0)
         y = tf.broadcast_to(y, [n_samples, y.shape[0], y.shape[1]])
-        cat = tf.keras.layers.Concatenate()([z, y])
-        x_mean, x_std = self._decoder(cat)
+        concatted = tf.keras.layers.Concatenate()([z, y])
+        x_mean, x_std = self._decoder(concatted)
         p_xz = tfp.distributions.Normal(x_mean, x_std)
         return q_zx, p_xz, z
 
@@ -80,10 +75,7 @@ class Bagel:
                 hidden_dims=self._hidden_dims
             ),
         )
-        self._p_z = tfp.distributions.Normal(
-            tf.zeros(self._latent_dim, dtype='float32'),
-            tf.ones(self._latent_dim, dtype='float32')
-        )
+        self._p_z = tfp.distributions.Normal(tf.zeros(self._latent_dim), tf.ones(self._latent_dim))
 
     @staticmethod
     def _m_elbo(x: tf.Tensor,
@@ -98,13 +90,14 @@ class Bagel:
         log_q_zx = tf.math.reduce_sum(q_zx.log_prob(z), axis=-1)
         log_p_z = tf.math.reduce_sum(p_z.log_prob(z), axis=-1)
         ratio = (tf.math.reduce_sum(normal, axis=-1) / float(normal.shape[-1]))
-        return -tf.math.reduce_mean(tf.math.reduce_sum(log_p_xz * normal, axis=-1) + log_p_z * ratio - log_q_zx)
+        return tf.math.reduce_mean(tf.math.reduce_sum(log_p_xz * normal, axis=-1) + log_p_z * ratio - log_q_zx)
 
-    def _mcmc_missing_imputation(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor, max_iter: int = 10) -> tf.Tensor:
+    def _missing_imputation(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor, max_iter: int = 10) -> tf.Tensor:
+        cond = tf.cast(normal, 'bool')
         for _ in range(max_iter):
             _, p_xz, _ = self._model([x, y])
             reconstruction = p_xz.sample()[0]
-            x = tf.where(tf.cast(normal, 'bool'), x, reconstruction)
+            x = tf.where(cond, x, reconstruction)
         return x
 
     def fit(self,
@@ -112,15 +105,12 @@ class Bagel:
             epochs: int,
             validation_kpi: Optional[bagel.data.KPI] = None,
             batch_size: int = 256):
-        dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size, missing_injection_rate=0.01)
-        dataset = dataset.to_tensorflow()
+        dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size, missing_injection_rate=0.01).to_tensorflow()
         dataset = dataset.shuffle(len(dataset)).batch(batch_size, drop_remainder=True)
         validation_dataset = None
         if validation_kpi is not None:
-            validation_dataset = bagel.data.KPIDataset(validation_kpi, window_size=self._window_size)
-            validation_dataset = validation_dataset.to_tensorflow()
+            validation_dataset = bagel.data.KPIDataset(validation_kpi, window_size=self._window_size).to_tensorflow()
             validation_dataset = validation_dataset.shuffle(len(validation_dataset)).batch(batch_size)
-
         lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
             initial_learning_rate=1e-3,
             decay_steps=len(dataset) * 10,
@@ -137,33 +127,31 @@ class Bagel:
                 with tf.GradientTape() as tape:
                     y = tf.keras.layers.Dropout(self._dropout_rate)(y)
                     q_zx, p_xz, z = self._model([x, y])
-                    loss = self._m_elbo(x=x, z=z, normal=normal, p_xz=p_xz, q_zx=q_zx, p_z=self._p_z)
+                    loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
                     loss += tf.math.add_n(self._model.losses)
                 grads = tape.gradient(loss, self._model.trainable_weights)
                 optimizer.apply_gradients(zip(grads, self._model.trainable_weights))
                 progbar.add(1, values=[('loss', loss)])
-            if validation_kpi is None:
-                continue
-            for batch in validation_dataset:
-                y, x, normal = batch
-                q_zx, p_xz, z = self._model([x, y])
-                val_loss = self._m_elbo(x=x, z=z, normal=normal, p_xz=p_xz, q_zx=q_zx, p_z=self._p_z)
-                val_loss += tf.math.add_n(self._model.losses)
-                progbar.add(1, values=[('val_loss', val_loss)])
+            if validation_kpi is not None:
+                for batch in validation_dataset:
+                    y, x, normal = batch
+                    q_zx, p_xz, z = self._model([x, y])
+                    val_loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
+                    val_loss += tf.math.add_n(self._model.losses)
+                    progbar.add(1, values=[('val_loss', val_loss)])
 
     def predict(self, kpi: bagel.data.KPI, batch_size: int = 256) -> np.ndarray:
         print('Testing Epoch')
         kpi = kpi.no_labels()
-        dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size)
-        dataset = dataset.to_tensorflow()
+        dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size).to_tensorflow()
         dataset = dataset.batch(batch_size)
         progbar = tf.keras.utils.Progbar(len(dataset), interval=0.5)
         anomaly_scores = []
         for batch in dataset:
             y, x, normal = batch
-            x = self._mcmc_missing_imputation(x, y, normal)
+            x = self._missing_imputation(x, y, normal)
             q_zx, p_xz, z = self._model([x, y], n_samples=128)
-            test_loss = self._m_elbo(x=x, z=z, normal=normal, p_xz=p_xz, q_zx=q_zx, p_z=self._p_z)
+            test_loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
             log_p_xz = p_xz.log_prob(x).numpy()
             anomaly_scores.extend(-np.mean(log_p_xz[:, :, -1], axis=0))
             progbar.add(1, values=[('test_loss', test_loss)])

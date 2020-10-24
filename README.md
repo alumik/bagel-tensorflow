@@ -14,24 +14,24 @@ conda env create -f environment.yml
 
 ```
 cd sample
-python main.py
+python bagel.py
 ```
 
 KPI data must be stored in csv files in the following format:
 
 ```
-timestamp,  value,              label
-1469376000, 0.8473002740000001, 0
-1469376300, -0.036137314,       0
-1469376600, 0.074292384,        0
-1469376900, 0.074292384,        0
-1469377200, -0.036137314,       0
-1469377500, 0.184722083,        0
-1469377800, -0.036137314,       0
-1469378100, 0.184722083,        0
+timestamp,  value,        label
+1469376000,  0.847300274, 0
+1469376300, -0.036137314, 0
+1469376600,  0.074292384, 0
+1469376900,  0.074292384, 0
+1469377200, -0.036137314, 0
+1469377500,  0.184722083, 0
+1469377800, -0.036137314, 0
+1469378100,  0.184722083, 0
 ```
 
-`label`: `0` for normal points and `1` for anomaly points.
+`label`: `0` for normal points, `1` for anomaly points.
 
 ## Citation
 
