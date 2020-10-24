@@ -111,7 +111,7 @@ class Bagel:
             kpi: bagel.data.KPI,
             epochs: int,
             validation_kpi: Optional[bagel.data.KPI] = None,
-            batch_size: int = 128):
+            batch_size: int = 256):
         dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size, missing_injection_rate=0.01)
         dataset = dataset.to_tensorflow()
         dataset = dataset.shuffle(len(dataset)).batch(batch_size, drop_remainder=True)
@@ -161,7 +161,7 @@ class Bagel:
         anomaly_scores = []
         for batch in dataset:
             y, x, normal = batch
-            x = self._mcmc_missing_imputation(x=x, y=y, normal=normal)
+            x = self._mcmc_missing_imputation(x, y, normal)
             q_zx, p_xz, z = self._model([x, y], n_samples=128)
             test_loss = self._m_elbo(x=x, z=z, normal=normal, p_xz=p_xz, q_zx=q_zx, p_z=self._p_z)
             log_p_xz = p_xz.log_prob(x).numpy()
