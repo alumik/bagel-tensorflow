@@ -14,18 +14,16 @@ class AutoencoderLayer(tf.keras.layers.Layer):
             tf.keras.Input(shape=(input_dim,)),
         ])
         for hidden_dim in hidden_dims:
-            self._hidden.add(tf.keras.layers.Dense(hidden_dim, activation='relu'))
-        self._mean = tf.keras.layers.Dense(output_dim)
-        self._std = tf.keras.layers.Dense(output_dim)
+            self._hidden.add(
+                tf.keras.layers.Dense(hidden_dim, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.001))
+            )
+        self._mean = tf.keras.layers.Dense(output_dim, kernel_regularizer=tf.keras.regularizers.L2(0.001))
+        self._std = tf.keras.layers.Dense(output_dim, kernel_regularizer=tf.keras.regularizers.L2(0.001))
 
     def call(self, inputs, **kwargs):
         x = self._hidden(inputs)
         output_mean = self._mean(x)
         output_std = tf.math.softplus(self._std(x)) + 1e-6
-        loss = tf.Variable(0.)
-        for weight in self._hidden.weights:
-            loss.assign(loss + tf.math.reduce_sum(tf.math.square(weight)))
-        self.add_loss(loss)
         return output_mean, output_std
 
 
@@ -140,7 +138,7 @@ class Bagel:
                     y = tf.keras.layers.Dropout(self._dropout_rate)(y)
                     q_zx, p_xz, z = self._model([x, y])
                     loss = self._m_elbo(x=x, z=z, normal=normal, p_xz=p_xz, q_zx=q_zx, p_z=self._p_z)
-                    loss += tf.math.reduce_sum(self._model.losses) * 0.001
+                    loss += tf.math.add_n(self._model.losses)
                 grads = tape.gradient(loss, self._model.trainable_weights)
                 optimizer.apply_gradients(zip(grads, self._model.trainable_weights))
                 progbar.add(1, values=[('loss', loss)])
@@ -150,7 +148,7 @@ class Bagel:
                 y, x, normal = batch
                 q_zx, p_xz, z = self._model([x, y])
                 val_loss = self._m_elbo(x=x, z=z, normal=normal, p_xz=p_xz, q_zx=q_zx, p_z=self._p_z)
-                val_loss += tf.math.reduce_sum(self._model.losses) * 0.001
+                val_loss += tf.math.add_n(self._model.losses)
                 progbar.add(1, values=[('val_loss', val_loss)])
 
     def predict(self, kpi: bagel.data.KPI, batch_size: int = 256) -> np.ndarray:
