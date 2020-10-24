@@ -13,7 +13,7 @@ conda env create -f environment.yml
 ## Run
 
 ```
-python setup.py develop
+pip install -e .
 cd sample
 python main.py
 ```
