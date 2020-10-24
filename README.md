@@ -13,8 +13,9 @@ conda env create -f environment.yml
 ## Run
 
 ```
+python setup.py develop
 cd sample
-python bagel.py
+python main.py
 ```
 
 KPI data must be stored in csv files in the following format:
