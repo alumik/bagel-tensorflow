@@ -66,13 +66,6 @@ def get_test_results(labels: np.ndarray,
             'f1score': f1score}
 
 
-def log_test_results(results: Dict):
-    print(f'threshold: {results.get("threshold")}\n'
-          f'precision: {results.get("precision"):.3f}\n'
-          f'recall: {results.get("recall"):.3f}\n'
-          f'f1score: {results.get("f1score"):.3f}\n')
-
-
 class KPIStats:
 
     def __init__(self, kpi: bagel.data.KPI):

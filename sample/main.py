@@ -22,7 +22,11 @@ def main():
                                                  scores=anomaly_scores,
                                                  missing=test_kpi.missing)
         stats = bagel.testing.get_kpi_stats(kpi, test_kpi)
-        bagel.testing.log_test_results(results)
+        print('Results')
+        print(f'threshold: {results.get("threshold"):.6f} - '
+              f'precision: {results.get("precision"):.3f} - '
+              f'recall: {results.get("recall"):.3f} - '
+              f'f1score: {results.get("f1score"):.3f}\n')
 
         with open(f'{os.path.join(OUTPUT, kpi.name)}.txt', 'w') as output:
             output.write(f'kpi_name={kpi.name}\n\n'

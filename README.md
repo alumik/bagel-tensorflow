@@ -1,6 +1,6 @@
 # Bagel
 
-![version-1.2.1](https://img.shields.io/badge/version-1.2.1-blue)
+![version-1.2.2](https://img.shields.io/badge/version-1.2.2-blue)
 
 A robust and unsupervised KPI anomaly detection algorithm based on conditional variational autoencoder.
 
