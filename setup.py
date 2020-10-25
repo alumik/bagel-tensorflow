@@ -8,7 +8,7 @@ setuptools.setup(
     version='1.2.2',
     author='AlumiK',
     author_email='nczzy1997@gmail.com',
-    description='TensorFlow 2 implementation of Bagel',
+    description='Implementation of Bagel in TensorFlow 2',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/AlumiK/bagel-tensorflow',
@@ -21,6 +21,8 @@ setuptools.setup(
         'tensorflow-probability',
     ],
     classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: OS Independent',
