@@ -8,21 +8,22 @@ def main():
 
     for file in file_list:
         kpi = bagel.utils.load_kpi(file)
+        print(f'KPI: {kpi.name}')
         train_kpi, valid_kpi, test_kpi = kpi.split((0.49, 0.21, 0.3))
         train_kpi, mean, std = train_kpi.standardize()
         valid_kpi, _, _ = valid_kpi.standardize(mean=mean, std=std)
         test_kpi, _, _ = test_kpi.standardize(mean=mean, std=std)
 
         model = bagel.models.Bagel()
-        model.fit(kpi=train_kpi.no_labels(), validation_kpi=valid_kpi, epochs=EPOCHS)
+        model.fit(kpi=train_kpi.no_labels(), validation_kpi=valid_kpi, epochs=EPOCHS, verbose=1)
         anomaly_scores = model.predict(test_kpi)
 
         results = bagel.testing.get_test_results(labels=test_kpi.labels,
                                                  scores=anomaly_scores,
                                                  missing=test_kpi.missing)
         stats = bagel.testing.get_kpi_stats(kpi, test_kpi)
+        bagel.testing.log_test_results(results)
 
-        bagel.testing.log_test_results(name=kpi.name, results=results)
         with open(f'{os.path.join(OUTPUT, kpi.name)}.txt', 'w') as output:
             output.write(f'kpi_name={kpi.name}\n\n'
 

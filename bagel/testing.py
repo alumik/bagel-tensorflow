@@ -60,18 +60,13 @@ def get_test_results(labels: np.ndarray,
     adjusted_scores = _adjust_scores(labels=labels, scores=scores)
     adjusted_labels, adjusted_scores = _ignore_missing([labels, adjusted_scores], missing=missing)
     threshold, precision, recall, f1score = _best_f1score(labels=adjusted_labels, scores=adjusted_scores)
-    return {
-        'threshold': threshold,
-        'precision': precision,
-        'recall': recall,
-        'f1score': f1score
-    }
+    return {'threshold': threshold,
+            'precision': precision,
+            'recall': recall,
+            'f1score': f1score}
 
 
-def log_test_results(name: str, results: Dict, train_size: Optional[int] = None):
-    print(f'kpi_name: {name}')
-    if train_size is not None:
-        print(f'size: {train_size}')
+def log_test_results(results: Dict):
     print(f'threshold: {results.get("threshold")}\n'
           f'precision: {results.get("precision"):.3f}\n'
           f'recall: {results.get("recall"):.3f}\n'

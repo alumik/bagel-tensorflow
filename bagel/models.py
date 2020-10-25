@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 
-from typing import Sequence, Tuple, Optional
+from typing import Sequence, Tuple, Dict, Optional
 
 
 class AutoencoderLayer(tf.keras.layers.Layer):
@@ -135,39 +135,82 @@ class Bagel:
             kpi: bagel.data.KPI,
             epochs: int,
             validation_kpi: Optional[bagel.data.KPI] = None,
-            batch_size: int = 256):
+            batch_size: int = 256,
+            verbose: int = 1) -> Dict:
         dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size, missing_injection_rate=0.01).to_tensorflow()
         dataset = dataset.shuffle(len(dataset)).batch(batch_size, drop_remainder=True)
         validation_dataset = None
         if validation_kpi is not None:
             validation_dataset = bagel.data.KPIDataset(validation_kpi, window_size=self._window_size).to_tensorflow()
             validation_dataset = validation_dataset.shuffle(len(validation_dataset)).batch(batch_size)
+
+        losses = []
+        val_losses = []
+        history = {}
+        progbar = None
+        if verbose == 1:
+            print('Training Epoch')
+            progbar = tf.keras.utils.Progbar(epochs, interval=0.5, stateful_metrics=['loss', 'val_loss'])
+
         for epoch in range(epochs):
-            print(f'Training Epoch: {epoch + 1}/{epochs}')
-            progbar = tf.keras.utils.Progbar(len(dataset) + (0 if validation_kpi is None else len(validation_dataset)),
-                                             interval=0.5)
+            epoch_losses = []
+            epoch_val_losses = []
+            epoch_val_loss = np.nan
+
+            if verbose == 2:
+                print(f'Training Epoch {epoch + 1}/{epochs}')
+                progbar = tf.keras.utils.Progbar(
+                    target=len(dataset) + (0 if validation_kpi is None else len(validation_dataset)),
+                    interval=0.5
+                )
+
             for batch in dataset:
                 y, x, normal = batch
                 loss = self._train_step(x, y, normal)
-                progbar.add(1, values=[('loss', loss)])
+                epoch_losses.append(loss)
+                if verbose == 2:
+                    progbar.add(1, values=[('loss', loss)])
+            epoch_loss = tf.math.reduce_mean(epoch_losses).numpy()
+            losses.append(epoch_loss)
+
             if validation_kpi is not None:
                 for batch in validation_dataset:
                     y, x, normal = batch
                     val_loss = self._validation_step(x, y, normal)
-                    progbar.add(1, values=[('val_loss', val_loss)])
+                    epoch_val_losses.append(val_loss)
+                    if verbose == 2:
+                        progbar.add(1, values=[('val_loss', val_loss)])
+                epoch_val_loss = tf.math.reduce_mean(epoch_val_losses).numpy()
+                val_losses.append(epoch_val_loss)
 
-    def predict(self, kpi: bagel.data.KPI, batch_size: int = 256) -> np.ndarray:
+            if verbose == 1:
+                values = []
+                if not np.isnan(epoch_loss):
+                    values.append(('loss', epoch_loss))
+                if not np.isnan(epoch_val_loss):
+                    values.append(('val_loss', epoch_val_loss))
+                progbar.add(1, values=values)
+
+        history['loss'] = losses
+        if len(val_losses) > 0:
+            history['val_loss'] = val_losses
+        return history
+
+    def predict(self, kpi: bagel.data.KPI, batch_size: int = 256, verbose: int = 1) -> np.ndarray:
         print('Testing Epoch')
         kpi = kpi.no_labels()
         dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size).to_tensorflow()
         dataset = dataset.batch(batch_size)
-        progbar = tf.keras.utils.Progbar(len(dataset), interval=0.5)
+        progbar = None
+        if verbose == 1:
+            progbar = tf.keras.utils.Progbar(len(dataset), interval=0.5)
         anomaly_scores = []
         for batch in dataset:
             y, x, normal = batch
             test_loss, log_p_xz = self._test_step(x, y, normal)
             anomaly_scores.extend(-np.mean(log_p_xz[:, :, -1], axis=0))
-            progbar.add(1, values=[('test_loss', test_loss)])
+            if verbose == 1:
+                progbar.add(1, values=[('test_loss', test_loss)])
         anomaly_scores = np.asarray(anomaly_scores, dtype=np.float32)
         return np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
 
