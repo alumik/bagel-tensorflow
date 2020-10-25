@@ -36,6 +36,30 @@ timestamp,  value,        label
 
 `label`: `0` for normal points, `1` for anomaly points.
 
+## Usage
+
+To prepare the data:
+
+```python
+import bagel
+
+kpi = bagel.utils.load_kpi(file_path)
+train_kpi, valid_kpi, test_kpi = kpi.split((0.49, 0.21, 0.3))
+train_kpi, mean, std = train_kpi.standardize()
+valid_kpi, _, _ = valid_kpi.standardize(mean=mean, std=std)
+test_kpi, _, _ = test_kpi.standardize(mean=mean, std=std)
+```
+
+To construct a Donut model, train the model, and use the trained model for prediction:
+
+```python
+import bagel
+
+model = bagel.models.Bagel()
+model.fit(kpi=train_kpi.no_labels(), validation_kpi=valid_kpi, epochs=EPOCHS)
+anomaly_scores = model.predict(test_kpi)
+```
+
 ## Citation
 
 ```bibtex
