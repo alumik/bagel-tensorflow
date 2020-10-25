@@ -170,3 +170,9 @@ class Bagel:
             progbar.add(1, values=[('test_loss', test_loss)])
         anomaly_scores = np.asarray(anomaly_scores, dtype=np.float32)
         return np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
+
+    def save(self, path: str):
+        self._model.save_weights(path)
+
+    def load(self, path: str):
+        self._model.load_weights(path)

@@ -60,6 +60,18 @@ model.fit(kpi=train_kpi.no_labels(), validation_kpi=valid_kpi, epochs=EPOCHS)
 anomaly_scores = model.predict(test_kpi)
 ```
 
+To save and restore a trained model:
+
+```python
+# Save a trained model
+model.save(path)
+
+# Load a pre-trained model
+import bagel
+model = bagel.models.Bagel()
+model.load(path)
+```
+
 ## Citation
 
 ```bibtex
