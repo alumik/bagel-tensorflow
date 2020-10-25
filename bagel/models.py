@@ -3,14 +3,14 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 
-from typing import Sequence, Optional
+from typing import Sequence, Tuple, Optional
 
 
 class AutoencoderLayer(tf.keras.layers.Layer):
 
-    def __init__(self, input_dim: int, output_dim: int, hidden_dims: Sequence[int]):
+    def __init__(self, output_dim: int, hidden_dims: Sequence[int]):
         super().__init__()
-        self._hidden = tf.keras.Sequential([tf.keras.Input(shape=(input_dim,))])
+        self._hidden = tf.keras.Sequential()
         for hidden_dim in hidden_dims:
             self._hidden.add(
                 tf.keras.layers.Dense(hidden_dim, activation='relu', kernel_regularizer=tf.keras.regularizers.L2(0.001))
@@ -65,17 +65,22 @@ class Bagel:
         self._dropout_rate = dropout_rate
         self._model = ConditionalVariationalAutoencoder(
             encoder=AutoencoderLayer(
-                input_dim=self._window_size + self._cond_size,
                 output_dim=self._latent_dim,
                 hidden_dims=self._hidden_dims
             ),
             decoder=AutoencoderLayer(
-                input_dim=self._latent_dim + self._cond_size,
                 output_dim=self._window_size,
                 hidden_dims=self._hidden_dims
             ),
         )
         self._p_z = tfp.distributions.Normal(tf.zeros(self._latent_dim), tf.ones(self._latent_dim))
+        self._lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
+            initial_learning_rate=1e-3,
+            decay_steps=1000,
+            decay_rate=0.75,
+            staircase=True
+        )
+        self._optimizer = tf.keras.optimizers.Adam(learning_rate=self._lr_scheduler, clipnorm=10.)
 
     @staticmethod
     def _m_elbo(x: tf.Tensor,
@@ -100,6 +105,32 @@ class Bagel:
             x = tf.where(cond, x, reconstruction)
         return x
 
+    @tf.function
+    def _train_step(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor) -> tf.Tensor:
+        with tf.GradientTape() as tape:
+            y = tf.keras.layers.Dropout(self._dropout_rate)(y)
+            q_zx, p_xz, z = self._model([x, y])
+            loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
+            loss += tf.math.add_n(self._model.losses)
+        grads = tape.gradient(loss, self._model.trainable_weights)
+        self._optimizer.apply_gradients(zip(grads, self._model.trainable_weights))
+        return loss
+
+    @tf.function
+    def _validation_step(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor) -> tf.Tensor:
+        q_zx, p_xz, z = self._model([x, y])
+        val_loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
+        val_loss += tf.math.add_n(self._model.losses)
+        return val_loss
+
+    @tf.function
+    def _test_step(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor) -> Tuple[tf.Tensor, np.ndarray]:
+        x = self._missing_imputation(x, y, normal)
+        q_zx, p_xz, z = self._model([x, y], n_samples=128)
+        test_loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
+        log_p_xz = p_xz.log_prob(x)
+        return test_loss, log_p_xz
+
     def fit(self,
             kpi: bagel.data.KPI,
             epochs: int,
@@ -111,33 +142,18 @@ class Bagel:
         if validation_kpi is not None:
             validation_dataset = bagel.data.KPIDataset(validation_kpi, window_size=self._window_size).to_tensorflow()
             validation_dataset = validation_dataset.shuffle(len(validation_dataset)).batch(batch_size)
-        lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
-            initial_learning_rate=1e-3,
-            decay_steps=len(dataset) * 10,
-            decay_rate=0.75,
-            staircase=True
-        )
-        optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler, clipnorm=10.)
         for epoch in range(epochs):
             print(f'Training Epoch: {epoch + 1}/{epochs}')
             progbar = tf.keras.utils.Progbar(len(dataset) + (0 if validation_kpi is None else len(validation_dataset)),
                                              interval=0.5)
             for batch in dataset:
                 y, x, normal = batch
-                with tf.GradientTape() as tape:
-                    y = tf.keras.layers.Dropout(self._dropout_rate)(y)
-                    q_zx, p_xz, z = self._model([x, y])
-                    loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
-                    loss += tf.math.add_n(self._model.losses)
-                grads = tape.gradient(loss, self._model.trainable_weights)
-                optimizer.apply_gradients(zip(grads, self._model.trainable_weights))
+                loss = self._train_step(x, y, normal)
                 progbar.add(1, values=[('loss', loss)])
             if validation_kpi is not None:
                 for batch in validation_dataset:
                     y, x, normal = batch
-                    q_zx, p_xz, z = self._model([x, y])
-                    val_loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
-                    val_loss += tf.math.add_n(self._model.losses)
+                    val_loss = self._validation_step(x, y, normal)
                     progbar.add(1, values=[('val_loss', val_loss)])
 
     def predict(self, kpi: bagel.data.KPI, batch_size: int = 256) -> np.ndarray:
@@ -149,10 +165,7 @@ class Bagel:
         anomaly_scores = []
         for batch in dataset:
             y, x, normal = batch
-            x = self._missing_imputation(x, y, normal)
-            q_zx, p_xz, z = self._model([x, y], n_samples=128)
-            test_loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
-            log_p_xz = p_xz.log_prob(x).numpy()
+            test_loss, log_p_xz = self._test_step(x, y, normal)
             anomaly_scores.extend(-np.mean(log_p_xz[:, :, -1], axis=0))
             progbar.add(1, values=[('test_loss', test_loss)])
         anomaly_scores = np.asarray(anomaly_scores, dtype=np.float32)
