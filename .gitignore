@@ -1,6 +1,11 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
 # Jetbrains IDE
 .idea/
 
