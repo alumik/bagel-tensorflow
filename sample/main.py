@@ -22,9 +22,8 @@ def main():
                                                  scores=anomaly_scores,
                                                  missing=test_kpi.missing)
         stats = bagel.testing.get_kpi_stats(kpi, test_kpi)
-        print('Results')
-        print(f'threshold: {results.get("threshold"):.6f} - '
-              f'precision: {results.get("precision"):.3f} - '
+        print('Metrics')
+        print(f'precision: {results.get("precision"):.3f} - '
               f'recall: {results.get("recall"):.3f} - '
               f'f1score: {results.get("f1score"):.3f}\n')
 
