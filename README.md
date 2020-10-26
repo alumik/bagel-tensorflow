@@ -3,7 +3,9 @@
 ![version-1.2.2](https://img.shields.io/badge/version-1.2.2-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/AlumiK/bagel-tensorflow/blob/main/LICENSE)
 
-A robust and unsupervised KPI anomaly detection algorithm based on conditional variational autoencoder.
+Bagel is a robust and unsupervised KPI anomaly detection algorithm based on conditional variational autoencoder.
+
+This is an implementation of Bagel in TensorFlow 2. The original PyTorch 0.4 implementation can be found here: [NetManAIOps/Bagel](https://github.com/NetManAIOps/Bagel).
 
 ## Dependencies
 
