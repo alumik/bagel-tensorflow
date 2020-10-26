@@ -6,16 +6,33 @@ A robust and unsupervised KPI anomaly detection algorithm based on conditional v
 
 ## Dependencies
 
-Use Anaconda or Miniconda to manage dependencies:
+- Python >=3.6, <3.9
+- TensorFlow 2
+- CUDA Toolkit 10.1
+- cuDNN
+
+Normally, `pip` will automatically install required PyPI dependencies when you install this package:
+ 
+```
+pip install -e .
+``` 
+
+An `environment.yml` is also provided if you want to use `conda` to manage dependencies:
 
 ```
 conda env create -f environment.yml
 ```
 
+### Note
+
+1. `sample/plot_kpi.py` requires `matplotlib`. You can manually install it by `pip install matplotlib`.
+2. On Windows, TensorFlow 2 requires [the latest VC runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+
 ## Run
 
+A sample script can be found at `sample/main.py`:
+
 ```
-pip install -e .
 cd sample
 python main.py
 ```
