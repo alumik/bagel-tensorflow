@@ -51,7 +51,8 @@ timestamp,  value,        label
 1469378100,  0.184722083, 0
 ```
 
-`label`: `0` for normal points, `1` for anomaly points.
+- `timestamp`: timestamps in seconds (10-digit).
+- `label`: `0` for normal points, `1` for anomaly points.
 
 ## Usage
 
