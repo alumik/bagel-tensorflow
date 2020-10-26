@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='bagel-tensorflow',
-    version='1.2.2',
+    version='1.2.3',
     author='AlumiK',
     author_email='nczzy1997@gmail.com',
     license='MIT',
