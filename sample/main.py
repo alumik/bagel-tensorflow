@@ -9,6 +9,7 @@ def main():
     for file in file_list:
         kpi = bagel.utils.load_kpi(file)
         print(f'KPI: {kpi.name}')
+        kpi.complete_timestamp()
         train_kpi, valid_kpi, test_kpi = kpi.split((0.49, 0.21, 0.3))
         train_kpi, mean, std = train_kpi.standardize()
         valid_kpi, _, _ = valid_kpi.standardize(mean=mean, std=std)
@@ -54,5 +55,5 @@ def main():
 if __name__ == '__main__':
     EPOCHS = 50
     INPUT = 'data'
-    OUTPUT = 'out'
+    OUTPUT = os.path.join('out', 'bagel')
     main()

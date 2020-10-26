@@ -65,6 +65,7 @@ To prepare the data:
 import bagel
 
 kpi = bagel.utils.load_kpi(file_path)
+kpi.complete_timestamp()
 train_kpi, valid_kpi, test_kpi = kpi.split((0.49, 0.21, 0.3))
 train_kpi, mean, std = train_kpi.standardize()
 valid_kpi, _, _ = valid_kpi.standardize(mean=mean, std=std)
