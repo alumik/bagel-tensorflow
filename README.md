@@ -2,6 +2,7 @@
 
 <img width="150" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg" />
 
+![python-3.6-3.7-3.8](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
 ![version-1.2.3](https://img.shields.io/badge/version-1.2.3-blue)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/AlumiK/bagel-tensorflow/blob/main/LICENSE)
 
