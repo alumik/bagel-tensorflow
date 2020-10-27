@@ -3,6 +3,7 @@
 ![python-3.6-3.7-3.8](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
 ![version-1.3.0](https://img.shields.io/badge/version-1.3.0-blue)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/AlumiK/bagel-tensorflow/blob/main/LICENSE)
+[![open-in-colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/AlumiK/bagel-tensorflow/blob/main/notebooks/bagel_playground.ipynb)
 
 <img width="140" alt="Bagel Logo" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg"/>
 
@@ -29,12 +30,14 @@ An `environment.yml` is also provided if you want to use `conda` to manage depen
 conda env create -f environment.yml
 ```
 
-### Note
+### Notes
 
 1. `sample/plot_kpi.py` requires `matplotlib`. You can manually install it by `pip install matplotlib`.
 2. On Windows, TensorFlow 2 requires [the latest VC runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
 ## Run
+
+### Sample Script
 
 A sample script can be found at `sample/main.py`:
 
@@ -42,6 +45,14 @@ A sample script can be found at `sample/main.py`:
 cd sample
 python main.py
 ```
+
+### Jupyter Notebook
+
+To help visualize Bagel and to help you get started, we provide a Jupyter notebook found in `notebooks/bagel_playground.ipynb` that allows one to visualize Bagel in real time.
+
+The notebook will clone the repo and run Bagel on the KPI data found in `sample/data`.
+
+### KPI Format
 
 KPI data must be stored in csv files in the following format:
 
