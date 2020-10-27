@@ -80,9 +80,9 @@ class Bagel:
     def _m_elbo(x: tf.Tensor,
                 z: tf.Tensor,
                 normal: tf.Tensor,
-                p_xz: tfp.distributions.Normal,
                 q_zx: tfp.distributions.Normal,
-                p_z: tfp.distributions.Normal) -> tf.Tensor:
+                p_z: tfp.distributions.Normal,
+                p_xz: tfp.distributions.Normal) -> tf.Tensor:
         x = tf.expand_dims(x, 0)
         normal = tf.expand_dims(normal, 0)
         log_p_xz = p_xz.log_prob(x)
@@ -104,7 +104,7 @@ class Bagel:
         with tf.GradientTape() as tape:
             y = tf.keras.layers.Dropout(self._dropout_rate)(y)
             q_zx, p_xz, z = self._model([x, y])
-            loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
+            loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
             loss += tf.math.add_n(self._model.losses)
         grads = tape.gradient(loss, self._model.trainable_weights)
         self._optimizer.apply_gradients(zip(grads, self._model.trainable_weights))
@@ -113,7 +113,7 @@ class Bagel:
     @tf.function
     def _validation_step(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor) -> tf.Tensor:
         q_zx, p_xz, z = self._model([x, y])
-        val_loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
+        val_loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
         val_loss += tf.math.add_n(self._model.losses)
         return val_loss
 
@@ -121,7 +121,7 @@ class Bagel:
     def _test_step(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor) -> Tuple[tf.Tensor, np.ndarray]:
         x = self._missing_imputation(x, y, normal)
         q_zx, p_xz, z = self._model([x, y], n_samples=128)
-        test_loss = -self._m_elbo(x, z, normal, p_xz, q_zx, self._p_z)
+        test_loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
         log_p_xz = p_xz.log_prob(x)
         return test_loss, log_p_xz
 
@@ -167,8 +167,7 @@ class Bagel:
                 )
 
             for batch in dataset:
-                y, x, normal = batch
-                loss = self._train_step(x, y, normal)
+                loss = self._train_step(*batch)
                 epoch_losses.append(loss)
                 if verbose == 2:
                     progbar.add(1, values=[('loss', loss)])
@@ -177,8 +176,7 @@ class Bagel:
 
             if validation_kpi is not None:
                 for batch in validation_dataset:
-                    y, x, normal = batch
-                    val_loss = self._validation_step(x, y, normal)
+                    val_loss = self._validation_step(*batch)
                     epoch_val_losses.append(val_loss)
                     if verbose == 2:
                         progbar.add(1, values=[('val_loss', val_loss)])
@@ -208,8 +206,7 @@ class Bagel:
             progbar = tf.keras.utils.Progbar(len(dataset), interval=0.5)
         anomaly_scores = []
         for batch in dataset:
-            y, x, normal = batch
-            test_loss, log_p_xz = self._test_step(x, y, normal)
+            test_loss, log_p_xz = self._test_step(*batch)
             anomaly_scores.extend(-np.mean(log_p_xz[:, :, -1], axis=0))
             if verbose == 1:
                 progbar.add(1, values=[('test_loss', test_loss)])

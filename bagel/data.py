@@ -107,7 +107,7 @@ class KPIDataset:
         self._label_windows = self._to_windows(kpi.labels)
         self._normal_windows = self._to_windows(1 - kpi.abnormal)
 
-        self._time_vectors = []
+        self._time_code = []
         self._values = []
         self._normal = []
         for i in range(len(self._value_windows)):
@@ -120,12 +120,12 @@ class KPIDataset:
             values[np.logical_and(normal == 0, labels == 0)] = 0.
 
             time_index = i + self._window_size - 1
-            time_vector = np.concatenate(
+            time_code = np.concatenate(
                 [self._one_hot_minute[time_index], self._one_hot_hour[time_index], self._one_hot_weekday[time_index]],
                 axis=-1
             )
 
-            self._time_vectors.append(time_vector)
+            self._time_code.append(time_code)
             self._values.append(values)
             self._normal.append(normal)
 
@@ -153,8 +153,8 @@ class KPIDataset:
         return np.eye(depth)[indices]
 
     @property
-    def time_vectors(self) -> np.ndarray:
-        return np.asarray(self._time_vectors, dtype=np.float32)
+    def time_code(self) -> np.ndarray:
+        return np.asarray(self._time_code, dtype=np.float32)
 
     @property
     def values(self) -> np.ndarray:
@@ -165,4 +165,4 @@ class KPIDataset:
         return np.asarray(self._normal, dtype=np.float32)
 
     def to_tensorflow(self) -> tf.data.Dataset:
-        return tf.data.Dataset.from_tensor_slices((self.time_vectors, self.values, self.normal))
+        return tf.data.Dataset.from_tensor_slices((self.values, self.time_code, self.normal))
