@@ -16,7 +16,7 @@ def main():
         test_kpi, _, _ = test_kpi.standardize(mean=mean, std=std)
 
         model = bagel.models.Bagel()
-        model.fit(kpi=train_kpi.no_labels(), validation_kpi=valid_kpi, epochs=EPOCHS, verbose=1)
+        model.fit(kpi=train_kpi.use_labels(0.), validation_kpi=valid_kpi, epochs=EPOCHS, verbose=1)
         anomaly_scores = model.predict(test_kpi)
 
         results = bagel.testing.get_test_results(labels=test_kpi.labels,

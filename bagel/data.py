@@ -89,8 +89,22 @@ class KPI:
         kpi = KPI(timestamps=self.timestamps, values=values, labels=self.labels, missing=self.missing, name=self.name)
         return kpi, mean, std
 
+    def use_labels(self, rate: float = 1.) -> 'KPI':
+        if not 0. <= rate <= 1.:
+            raise ValueError('`rate` must be in [0, 1]')
+        if rate == 0.:
+            return KPI(timestamps=self.timestamps, values=self.values, labels=None, missing=self.missing,
+                       name=self.name)
+        if rate == 1.:
+            return self
+        labels = np.copy(self.labels)
+        anomaly_idx = labels.nonzero()[0]
+        drop_idx = np.random.choice(anomaly_idx, round((1 - rate) * len(anomaly_idx)), replace=False)
+        labels[drop_idx] = 0
+        return KPI(timestamps=self.timestamps, values=self.values, labels=labels, missing=self.missing, name=self.name)
+
     def no_labels(self) -> 'KPI':
-        return KPI(timestamps=self.timestamps, values=self.values, labels=None, missing=self.missing, name=self.name)
+        return self.use_labels(0.)
 
 
 class KPIDataset:
