@@ -57,7 +57,6 @@ class Bagel:
                  hidden_dims: Optional[Sequence] = None,
                  latent_dim: int = 8,
                  dropout_rate: float = 0.1):
-        super().__init__()
         self._hidden_dims = [100, 100] if hidden_dims is None else hidden_dims
         self._latent_dim = latent_dim
         self._window_size = window_size
