@@ -142,7 +142,10 @@ class Bagel:
         progbar = None
         if verbose == 1:
             print('Training Epoch')
-            progbar = tf.keras.utils.Progbar(epochs, interval=0.5, stateful_metrics=['loss', 'val_loss'])
+            progbar = tf.keras.utils.Progbar(epochs,
+                                             interval=0.5,
+                                             stateful_metrics=['loss', 'val_loss'],
+                                             unit_name='epoch')
 
         lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
             initial_learning_rate=1e-3,
