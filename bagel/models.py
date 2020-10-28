@@ -60,7 +60,6 @@ class Bagel:
         self._hidden_dims = [100, 100] if hidden_dims is None else hidden_dims
         self._latent_dim = latent_dim
         self._window_size = window_size
-        self._cond_size = 60 + 24 + 7
         self._dropout_rate = dropout_rate
         self._model = ConditionalVariationalAutoencoder(
             encoder=AutoencoderLayer(
