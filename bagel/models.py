@@ -72,7 +72,13 @@ class Bagel:
             ),
         )
         self._p_z = tfp.distributions.Normal(tf.zeros(self._latent_dim), tf.ones(self._latent_dim))
-        self._optimizer = None
+        lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
+            initial_learning_rate=1e-3,
+            decay_steps=10000,
+            decay_rate=0.75,
+            staircase=True
+        )
+        self._optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler, clipnorm=10.)
 
     @staticmethod
     def _m_elbo(x: tf.Tensor,
@@ -146,14 +152,6 @@ class Bagel:
                                              interval=0.5,
                                              stateful_metrics=['loss', 'val_loss'],
                                              unit_name='epoch')
-
-        lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
-            initial_learning_rate=1e-3,
-            decay_steps=len(dataset) * 10,
-            decay_rate=0.75,
-            staircase=True
-        )
-        self._optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler, clipnorm=10.)
 
         for epoch in range(epochs):
             epoch_losses = []
