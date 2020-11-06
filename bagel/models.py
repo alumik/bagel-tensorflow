@@ -56,6 +56,7 @@ class Bagel:
                  window_size: int = 120,
                  hidden_dims: Optional[Sequence] = None,
                  latent_dim: int = 8,
+                 learning_rate: float = 1e-3,
                  dropout_rate: float = 0.1):
         self._hidden_dims = [100, 100] if hidden_dims is None else hidden_dims
         self._latent_dim = latent_dim
@@ -73,7 +74,7 @@ class Bagel:
         )
         self._p_z = tfp.distributions.Normal(tf.zeros(self._latent_dim), tf.ones(self._latent_dim))
         lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
-            initial_learning_rate=1e-3,
+            initial_learning_rate=learning_rate,
             decay_steps=10000,
             decay_rate=0.75,
             staircase=True
