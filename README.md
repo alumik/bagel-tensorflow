@@ -100,12 +100,12 @@ To save and restore a trained model:
 
 ```python
 # Save a trained model
-model.save(path)
+model.save(prefix)
 
 # Load a pre-trained model
 import bagel
 model = bagel.Bagel()
-model.load(path)
+model.load(prefix)
 ```
 
 ## Citation

@@ -206,8 +206,8 @@ class Bagel:
         anomaly_scores = np.asarray(anomaly_scores, dtype=np.float32)
         return np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
 
-    def save(self, path: str):
-        self._checkpoint.write(path)
+    def save(self, prefix: str):
+        self._checkpoint.write(prefix)
 
-    def load(self, path: str):
-        self._checkpoint.read(path).expect_partial()
+    def load(self, prefix: str):
+        self._checkpoint.read(prefix).expect_partial()
