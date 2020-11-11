@@ -72,6 +72,7 @@ class Bagel:
             staircase=True
         )
         self._optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler, clipnorm=10.)
+        self._checkpoint = tf.train.Checkpoint(model=self._model, optimizer=self._optimizer)
 
     @staticmethod
     def _m_elbo(x: tf.Tensor,
@@ -206,9 +207,7 @@ class Bagel:
         return np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
 
     def save(self, path: str):
-        checkpoint = tf.train.Checkpoint(model=self._model, optimizer=self._optimizer)
-        checkpoint.write(path)
+        self._checkpoint.write(path)
 
     def load(self, path: str):
-        checkpoint = tf.train.Checkpoint(model=self._model, optimizer=self._optimizer)
-        checkpoint.read(path).expect_partial()
+        self._checkpoint.read(path).expect_partial()
