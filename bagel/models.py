@@ -8,7 +8,7 @@ from typing import Sequence, Tuple, Dict, Optional
 
 class AutoencoderLayer(tf.keras.layers.Layer):
 
-    def __init__(self, output_dim: int, hidden_dims: Sequence[int]):
+    def __init__(self, hidden_dims: Sequence[int], output_dim: int):
         super().__init__()
         self._hidden = tf.keras.Sequential()
         for hidden_dim in hidden_dims:
@@ -63,14 +63,8 @@ class Bagel:
         self._window_size = window_size
         self._dropout_rate = dropout_rate
         self._model = ConditionalVariationalAutoencoder(
-            encoder=AutoencoderLayer(
-                output_dim=self._latent_dim,
-                hidden_dims=self._hidden_dims
-            ),
-            decoder=AutoencoderLayer(
-                output_dim=self._window_size,
-                hidden_dims=self._hidden_dims
-            ),
+            encoder=AutoencoderLayer(self._hidden_dims, self._latent_dim),
+            decoder=AutoencoderLayer(self._hidden_dims, self._window_size),
         )
         self._p_z = tfp.distributions.Normal(tf.zeros(self._latent_dim), tf.ones(self._latent_dim))
         lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
