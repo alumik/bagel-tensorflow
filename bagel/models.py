@@ -206,7 +206,9 @@ class Bagel:
         return np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
 
     def save(self, path: str):
-        self._model.save_weights(path)
+        checkpoint = tf.train.Checkpoint(model=self._model, optimizer=self._optimizer)
+        checkpoint.write(path)
 
     def load(self, path: str):
-        self._model.load_weights(path)
+        checkpoint = tf.train.Checkpoint(model=self._model, optimizer=self._optimizer)
+        checkpoint.read(path).expect_partial()
