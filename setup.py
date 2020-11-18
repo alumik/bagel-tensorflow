@@ -21,6 +21,11 @@ setuptools.setup(
         'tensorflow',
         'tensorflow-probability',
     ],
+    extras_require={
+        'dev': [
+            'matplotlib',
+        ],
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
