@@ -141,7 +141,7 @@ class Bagel:
         history = {}
         progbar = None
         if verbose == 1:
-            print('Training Epoch')
+            print('Training Epochs')
             progbar = tf.keras.utils.Progbar(epochs,
                                              interval=0.5,
                                              stateful_metrics=['loss', 'val_loss'],
@@ -190,12 +190,12 @@ class Bagel:
         return history
 
     def predict(self, kpi: bagel.data.KPI, batch_size: int = 256, verbose: int = 1) -> np.ndarray:
-        print('Testing Epoch')
         kpi = kpi.no_labels()
         dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size).to_tensorflow()
         dataset = dataset.batch(batch_size)
         progbar = None
         if verbose == 1:
+            print('Testing Epoch')
             progbar = tf.keras.utils.Progbar(len(dataset), interval=0.5)
         anomaly_scores = []
         for batch in dataset:
