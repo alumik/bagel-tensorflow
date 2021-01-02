@@ -39,7 +39,9 @@ conda env create -f environment.yml
 
 ### Note
 
-On Windows, TensorFlow 2 requires [the latest VC runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+- TensorFlow >= 2.4 is required.
+- TensorFlow version is tightly coupled to CUDA and cuDNN so they should be selected carefully.
+- On Windows, TensorFlow 2 requires [the latest VC runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
 ## Run
 
