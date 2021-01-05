@@ -104,8 +104,7 @@ class Bagel:
             q_zx, p_xz, z = self._model([x, y])
             loss = -self._m_elbo(x, z, normal, q_zx, self._p_z, p_xz)
             loss += tf.math.add_n(self._model.losses)
-        grads = tape.gradient(loss, self._model.trainable_weights)
-        self._optimizer.apply_gradients(zip(grads, self._model.trainable_weights))
+        self._optimizer.minimize(loss, self._model.trainable_weights, tape=tape)
         return loss
 
     @tf.function
