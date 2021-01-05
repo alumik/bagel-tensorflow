@@ -9,7 +9,8 @@
 
 Bagel is a robust and unsupervised KPI anomaly detection algorithm based on conditional variational autoencoder.
 
-This is an implementation of Bagel in TensorFlow 2. The original PyTorch 0.4 implementation can be found at [NetManAIOps/Bagel](https://github.com/NetManAIOps/Bagel).
+This is an implementation of Bagel in TensorFlow 2. The original PyTorch 0.4 implementation can be found at
+[NetManAIOps/Bagel](https://github.com/NetManAIOps/Bagel).
 
 ## Install
 
@@ -18,7 +19,7 @@ This is an implementation of Bagel in TensorFlow 2. The original PyTorch 0.4 imp
 Normally, `pip` will automatically install required PyPI dependencies when you install this package:
 
 - For development use:
- 
+
     ```
     git clone https://github.com/AlumiK/bagel-tensorflow.git
     cd bagel-tensorflow
@@ -41,7 +42,8 @@ conda env create -f environment.yml
 
 - TensorFlow >= 2.4 is required.
 - TensorFlow version is tightly coupled to CUDA and cuDNN so they should be selected carefully.
-- On Windows, TensorFlow 2 requires [the latest VC runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+- On Windows, TensorFlow 2 requires
+  [the latest VC runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
 ## Run
 
@@ -63,7 +65,7 @@ timestamp,   value,       label
 
 - `timestamp`: timestamps in seconds (10-digit).
 - `label`: `0` for normal points, `1` for anomaly points.
-- Labels are used for evaluation and are not required in the production environment. 
+- Labels are used for evaluation and are not required in the production environment.
 
 ### Sample Script
 
@@ -76,7 +78,8 @@ python main.py
 
 ### Jupyter Notebook
 
-To help visualize Bagel and to help you get started, we provide a Jupyter notebook found in `notebooks/bagel_playground.ipynb` that allows one to visualize Bagel in real time.
+To help visualize Bagel and to help you get started, we provide a Jupyter notebook found
+in `notebooks/bagel_playground.ipynb` that allows one to visualize Bagel in real time.
 
 ## Usage
 
@@ -111,6 +114,7 @@ model.save(prefix)
 
 # To load a pre-trained model
 import bagel
+
 model = bagel.Bagel()
 model.load(prefix)
 ```
