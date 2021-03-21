@@ -21,7 +21,8 @@ def main():
 
         results = bagel.testing.get_test_results(labels=test_kpi.labels,
                                                  scores=anomaly_scores,
-                                                 missing=test_kpi.missing)
+                                                 missing=test_kpi.missing,
+                                                 window_size=120)
         stats = bagel.testing.get_kpi_stats(kpi, test_kpi)
         print('Metrics')
         print(f'precision: {results.get("precision"):.3f} - '

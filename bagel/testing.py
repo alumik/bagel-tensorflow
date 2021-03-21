@@ -53,7 +53,7 @@ def _best_f1score(labels: np.ndarray, scores: np.ndarray) -> Tuple[float, float,
 def get_test_results(labels: np.ndarray,
                      scores: np.ndarray,
                      missing: np.ndarray,
-                     window_size: int = 120) -> Dict:
+                     window_size: int) -> Dict:
     labels = labels[window_size - 1:]
     scores = scores[window_size - 1:]
     missing = missing[window_size - 1:]
