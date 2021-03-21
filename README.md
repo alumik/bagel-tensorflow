@@ -3,7 +3,6 @@
 ![python-3.8](https://img.shields.io/badge/python-3.8-blue)
 ![version-1.6.1](https://img.shields.io/badge/version-1.6.1-blue)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/AlumiK/bagel-tensorflow/blob/main/LICENSE)
-[![open-in-colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/AlumiK/bagel-tensorflow/blob/main/notebooks/bagel_playground.ipynb)
 
 <img width="140" alt="Bagel Logo" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg"/>
 
