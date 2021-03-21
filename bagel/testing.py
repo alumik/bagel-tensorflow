@@ -53,11 +53,12 @@ def _best_f1score(labels: np.ndarray, scores: np.ndarray) -> Tuple[float, float,
 def get_test_results(labels: np.ndarray,
                      scores: np.ndarray,
                      missing: np.ndarray,
-                     window_size: int) -> Dict:
+                     window_size: int,
+                     delay: Optional[int] = None) -> Dict:
     labels = labels[window_size - 1:]
     scores = scores[window_size - 1:]
     missing = missing[window_size - 1:]
-    adjusted_scores = _adjust_scores(labels=labels, scores=scores)
+    adjusted_scores = _adjust_scores(labels=labels, scores=scores, delay=delay)
     adjusted_labels, adjusted_scores = _ignore_missing([labels, adjusted_scores], missing=missing)
     threshold, precision, recall, f1score = _best_f1score(labels=adjusted_labels, scores=adjusted_scores)
     return {'threshold': threshold,

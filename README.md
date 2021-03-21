@@ -1,7 +1,7 @@
 # Bagel
 
 ![python-3.8](https://img.shields.io/badge/python-3.8-blue)
-![version-1.6.1](https://img.shields.io/badge/version-1.6.1-blue)
+![version-1.7.0](https://img.shields.io/badge/version-1.7.0-blue)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/AlumiK/bagel-tensorflow/blob/main/LICENSE)
 
 <img width="140" alt="Bagel Logo" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg"/>
