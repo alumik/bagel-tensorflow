@@ -109,21 +109,17 @@ class KPI:
 
 class KPIDataset:
 
-    def __init__(self, kpi: KPI, window_size: int, missing_injection_rate: float = 0.):
+    def __init__(self, kpi: KPI, window_size: int, time_feature: Optional[str], missing_injection_rate: float = 0.):
         self._window_size = window_size
         self._missing_injection_rate = missing_injection_rate
-
-        self._one_hot_minute = self._one_hot(self._ts2minute(kpi.timestamps), depth=60)
-        self._one_hot_hour = self._one_hot(self._ts2hour(kpi.timestamps), depth=24)
-        self._one_hot_weekday = self._one_hot(self._ts2weekday(kpi.timestamps), depth=7)
-
         self._value_windows = self._to_windows(kpi.values)
         self._label_windows = self._to_windows(kpi.labels)
         self._normal_windows = self._to_windows(1 - kpi.abnormal)
-
+        self._one_hot_time = self._get_time_code(kpi, time_feature)
         self._time_code = []
         self._values = []
         self._normal = []
+
         for i in range(len(self._value_windows)):
             values = np.copy(self._value_windows[i]).astype(np.float32)
             labels = np.copy(self._label_windows[i]).astype(np.int)
@@ -132,12 +128,7 @@ class KPIDataset:
             injected_missing = np.random.binomial(1, self._missing_injection_rate, np.shape(values[normal == 1]))
             normal[normal == 1] = 1 - injected_missing
             values[np.logical_and(normal == 0, labels == 0)] = 0.
-
-            time_index = i + self._window_size - 1
-            time_code = np.concatenate(
-                [self._one_hot_minute[time_index], self._one_hot_hour[time_index], self._one_hot_weekday[time_index]],
-                axis=-1
-            )
+            time_code = self._one_hot_time[i + self._window_size - 1]
 
             self._time_code.append(time_code)
             self._values.append(values)
@@ -150,17 +141,28 @@ class KPIDataset:
             strides=(series.strides[-1], series.strides[-1])
         )
 
-    @staticmethod
-    def _ts2hour(ts: np.ndarray) -> np.ndarray:
-        return (ts % 86400) // 3600
-
-    @staticmethod
-    def _ts2minute(ts: np.ndarray) -> np.ndarray:
-        return ((ts % 86400) % 3600) // 60
-
-    @staticmethod
-    def _ts2weekday(ts: np.ndarray) -> np.ndarray:
-        return ((ts // 86400) + 4) % 7
+    def _get_time_code(self, kpi: KPI, time_feature: str) -> np.ndarray:
+        time_code = []
+        if time_feature:
+            for feature in time_feature:
+                if feature == 'a' or feature == 'A' or feature == 'w':
+                    time_code.append(self._one_hot(((kpi.timestamps // 86400) + 4) % 7, depth=7))
+                elif feature == 'H':
+                    time_code.append(self._one_hot((kpi.timestamps % 86400) // 3600, depth=24))
+                elif feature == 'I':
+                    time_code.append(self._one_hot((kpi.timestamps % 43200) // 3600, depth=12))
+                elif feature == 'M':
+                    time_code.append(self._one_hot(((kpi.timestamps % 86400) % 3600) // 60, depth=60))
+                elif feature == 'S':
+                    time_code.append(self._one_hot(((kpi.timestamps % 86400) % 3600) % 60, depth=60))
+                else:
+                    raise ValueError(f'Unsupported time feature: %{feature}')
+        if time_code:
+            time_code = np.concatenate(time_code, axis=-1)
+        else:
+            time_code = [[]] * len(kpi.timestamps)
+        time_code = np.asarray(time_code)
+        return time_code
 
     @staticmethod
     def _one_hot(indices: Sequence, depth: int) -> np.ndarray:

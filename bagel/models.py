@@ -47,18 +47,20 @@ class ConditionalVariationalAutoencoder(tf.keras.Model):
         return q_zx, p_xz, z
 
     def get_config(self):
-        raise NotImplementedError
+        return super().get_config()
 
 
 class Bagel:
 
     def __init__(self,
                  window_size: int = 120,
+                 time_feature: Optional[str] = 'MHw',
                  hidden_dims: Sequence = (100, 100),
                  latent_dim: int = 8,
                  learning_rate: float = 1e-3,
                  dropout_rate: float = 0.1):
         self._window_size = window_size
+        self._time_feature = time_feature
         self._dropout_rate = dropout_rate
         self._model = ConditionalVariationalAutoencoder(
             encoder=AutoencoderLayer(hidden_dims, latent_dim),
@@ -89,9 +91,9 @@ class Bagel:
         ratio = (tf.math.reduce_sum(normal, axis=-1) / float(normal.shape[-1]))
         return tf.math.reduce_mean(tf.math.reduce_sum(log_p_xz * normal, axis=-1) + log_p_z * ratio - log_q_zx)
 
-    def _missing_imputation(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor, max_iter: int = 10) -> tf.Tensor:
+    def _missing_imputation(self, x: tf.Tensor, y: tf.Tensor, normal: tf.Tensor, steps: int = 10) -> tf.Tensor:
         cond = tf.cast(normal, 'bool')
-        for _ in range(max_iter):
+        for _ in range(steps):
             _, p_xz, _ = self._model([x, y])
             reconstruction = p_xz.sample()[0]
             x = tf.where(cond, x, reconstruction)
@@ -128,11 +130,16 @@ class Bagel:
             validation_kpi: Optional[bagel.data.KPI] = None,
             batch_size: int = 256,
             verbose: int = 1) -> Dict:
-        dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size, missing_injection_rate=0.01).to_tensorflow()
+        dataset = bagel.data.KPIDataset(kpi,
+                                        window_size=self._window_size,
+                                        time_feature=self._time_feature,
+                                        missing_injection_rate=0.01).to_tensorflow()
         dataset = dataset.shuffle(len(dataset)).batch(batch_size, drop_remainder=True)
         validation_dataset = None
         if validation_kpi is not None:
-            validation_dataset = bagel.data.KPIDataset(validation_kpi, window_size=self._window_size).to_tensorflow()
+            validation_dataset = bagel.data.KPIDataset(validation_kpi,
+                                                       window_size=self._window_size,
+                                                       time_feature=self._time_feature).to_tensorflow()
             validation_dataset = validation_dataset.shuffle(len(validation_dataset)).batch(batch_size)
 
         losses = []
@@ -190,7 +197,9 @@ class Bagel:
 
     def predict(self, kpi: bagel.data.KPI, batch_size: int = 256, verbose: int = 1) -> np.ndarray:
         kpi = kpi.no_labels()
-        dataset = bagel.data.KPIDataset(kpi, window_size=self._window_size).to_tensorflow()
+        dataset = bagel.data.KPIDataset(kpi,
+                                        window_size=self._window_size,
+                                        time_feature=self._time_feature).to_tensorflow()
         dataset = dataset.batch(batch_size)
         progbar = None
         if verbose == 1:
@@ -203,7 +212,8 @@ class Bagel:
             if verbose == 1:
                 progbar.add(1, values=[('test_loss', test_loss)])
         anomaly_scores = np.asarray(anomaly_scores, dtype=np.float32)
-        return np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
+        anomaly_scores = np.concatenate([np.ones(self._window_size - 1) * np.min(anomaly_scores), anomaly_scores])
+        return anomaly_scores
 
     def save(self, prefix: str):
         self._checkpoint.write(prefix)
