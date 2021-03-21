@@ -1,5 +1,5 @@
-import os
 import bagel
+import pathlib
 import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,25 +25,30 @@ def _plot_kpi(kpi: bagel.data.KPI):
     plt.plot(x, y_anomaly, color='red')
     plt.plot(x, y_missing, color='orange')
     plt.title(kpi.name)
-    plt.ylim(-7.5, 7.5)
+    plt.ylim(y_limit)
 
 
 def main():
-    bagel.utils.mkdirs(OUTPUT)
-    file_list = bagel.utils.file_list(INPUT)
+    bagel.utils.mkdirs(output_path)
+    file_list = bagel.utils.file_list(input_path)
+    plt.rcParams.update({'font.size': font_size})
 
-    plt.figure(figsize=(32, 4))
+    plt.figure(figsize=fig_size, dpi=dpi)
     for i in range(total := len(file_list)):
         kpi = bagel.utils.load_kpi(file_list[i])
         print(f'Plotting: ({i + 1}/{total}) {kpi.name}')
         kpi, _, _ = kpi.standardize()
         kpi.complete_timestamp()
         _plot_kpi(kpi)
-        plt.savefig(os.path.join(OUTPUT, kpi.name + '.png'))
+        plt.savefig(output_path.joinpath(f'{kpi.name}.png'))
         plt.clf()
 
 
 if __name__ == '__main__':
-    INPUT = 'data'
-    OUTPUT = os.path.join('out', 'plot')
+    input_path = pathlib.Path('data')
+    output_path = pathlib.Path('out').joinpath('plot')
+    y_limit = (-7.5, 7.5)
+    fig_size = (32, 4)
+    dpi = 144
+    font_size = 22
     main()

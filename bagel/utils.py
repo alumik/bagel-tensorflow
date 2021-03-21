@@ -1,29 +1,24 @@
-import os
 import bagel
+import pathlib
 import pandas as pd
 
 from typing import Sequence
 
 
-def filename(file: str) -> str:
-    return os.path.splitext(os.path.basename(file))[0]
-
-
 def mkdirs(*dir_list):
     for directory in dir_list:
-        os.makedirs(directory, exist_ok=True)
+        pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
 
 
-def file_list(path: str) -> Sequence:
-    if os.path.isdir(path):
-        return [os.path.join(path, file) for file in os.listdir(path)]
-    else:
-        return [path]
+def file_list(path: pathlib.Path) -> Sequence:
+    if path.is_dir():
+        return list(path.iterdir())
+    return [path]
 
 
-def load_kpi(file: str, **kwargs) -> bagel.data.KPI:
+def load_kpi(file: pathlib.Path, **kwargs) -> bagel.data.KPI:
     df = pd.read_csv(file, **kwargs)
     return bagel.data.KPI(timestamps=df.timestamp,
                           values=df.value,
                           labels=df.get('label', None),
-                          name=bagel.utils.filename(file))
+                          name=file.stem)

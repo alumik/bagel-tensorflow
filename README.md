@@ -1,7 +1,7 @@
 # Bagel
 
 ![python-3.6-3.7-3.8](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)
-![version-1.6.0](https://img.shields.io/badge/version-1.6.0-blue)
+![version-1.6.1](https://img.shields.io/badge/version-1.6.1-blue)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/AlumiK/bagel-tensorflow/blob/main/LICENSE)
 [![open-in-colab](https://colab.research.google.com/assets/colab-badge.svg)](http://colab.research.google.com/github/AlumiK/bagel-tensorflow/blob/main/notebooks/bagel_playground.ipynb)
 
@@ -102,7 +102,7 @@ To construct a Bagel model, train the model, and use the trained model for predi
 import bagel
 
 model = bagel.Bagel()
-model.fit(kpi=train_kpi.use_labels(0.), validation_kpi=valid_kpi, epochs=EPOCHS)
+model.fit(kpi=train_kpi.use_labels(0.), validation_kpi=valid_kpi, epochs=epochs)
 anomaly_scores = model.predict(test_kpi)
 ```
 

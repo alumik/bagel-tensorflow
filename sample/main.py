@@ -1,10 +1,10 @@
-import os
 import bagel
+import pathlib
 
 
 def main():
-    bagel.utils.mkdirs(OUTPUT)
-    file_list = bagel.utils.file_list(INPUT)
+    bagel.utils.mkdirs(output_path)
+    file_list = bagel.utils.file_list(input_path)
 
     for file in file_list:
         kpi = bagel.utils.load_kpi(file)
@@ -16,7 +16,7 @@ def main():
         test_kpi, _, _ = test_kpi.standardize(mean=mean, std=std)
 
         model = bagel.Bagel()
-        model.fit(kpi=train_kpi.use_labels(0.), validation_kpi=valid_kpi, epochs=EPOCHS, verbose=1)
+        model.fit(kpi=train_kpi.use_labels(0.), validation_kpi=valid_kpi, epochs=epochs, verbose=1)
         anomaly_scores = model.predict(test_kpi)
 
         results = bagel.testing.get_test_results(labels=test_kpi.labels,
@@ -28,7 +28,7 @@ def main():
               f'recall: {results.get("recall"):.3f} - '
               f'f1score: {results.get("f1score"):.3f}\n')
 
-        with open(f'{os.path.join(OUTPUT, kpi.name)}.txt', 'w') as output:
+        with open(output_path.joinpath(f'{kpi.name}.txt'), 'w') as output:
             output.write(f'kpi_name={kpi.name}\n\n'
 
                          '[result]\n'
@@ -53,7 +53,7 @@ def main():
 
 
 if __name__ == '__main__':
-    EPOCHS = 50
-    INPUT = 'data'
-    OUTPUT = os.path.join('out', 'bagel')
+    epochs = 50
+    input_path = pathlib.Path('data')
+    output_path = pathlib.Path('out').joinpath('bagel')
     main()
