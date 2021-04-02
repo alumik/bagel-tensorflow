@@ -37,7 +37,7 @@ An `environment.yml` is also provided if you prefer `conda` to manage dependenci
 conda env create -f environment.yml
 ```
 
-### Note
+### Notes
 
 - TensorFlow >= 2.4 is required.
 - TensorFlow version is tightly coupled to CUDA and cuDNN so they should be selected carefully.
@@ -74,11 +74,6 @@ A sample script can be found at `sample/main.py`:
 cd sample
 python main.py
 ```
-
-### Jupyter Notebook
-
-To help visualize Bagel and to help you get started, we provide a Jupyter notebook found
-in `notebooks/bagel_playground.ipynb` that allows one to visualize Bagel in real time.
 
 ## Usage
 
