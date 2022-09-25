@@ -9,6 +9,5 @@ dependencies:
   - pip:
     - scikit-learn
     - pandas
-    - matplotlib
     - tensorflow
     - tensorflow-probability

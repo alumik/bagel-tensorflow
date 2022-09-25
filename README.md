@@ -1,9 +1,9 @@
 # Bagel
 
-![version-2.0.0](https://img.shields.io/badge/version-2.0.0-blue)
+![version-2.0.1](https://img.shields.io/badge/version-2.0.1-blue)
 ![python-3.10](https://img.shields.io/badge/python-3.10-blue?logo=python&logoColor=white)
 ![TensorFlow 2.10](https://img.shields.io/badge/TensorFlow-2.10-FF6F00?logo=tensorflow&logoColor=white)
-[![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/AlumiK/bagel-tensorflow/blob/main/LICENSE)
+[![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/alumik/bagel-tensorflow/blob/main/LICENSE)
 
 <img width="140" alt="Bagel Logo" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg"/>
 
@@ -14,20 +14,20 @@ This is an implementation of Bagel in TensorFlow 2. The original PyTorch 0.4 imp
 
 ## Install
 
-Normally, `pip` will automatically install required PyPI dependencies when you install this package:
+`pip` will automatically install required PyPI dependencies when you install this package:
 
 - For development use:
 
     ```
-    git clone https://github.com/AlumiK/bagel-tensorflow.git
+    git clone https://github.com/alumik/bagel-tensorflow.git
     cd bagel-tensorflow
-    pip install -e .[dev]
+    pip install -e .
     ```
 
 - For production use:
 
     ```
-    pip install git+https://github.com/AlumiK/bagel-tensorflow.git
+    pip install git+https://github.com/alumik/bagel-tensorflow.git
     ```
 
 An `environment.yml` is also provided if you prefer `conda` to manage dependencies:
@@ -55,8 +55,8 @@ timestamp,   value,       label
 ```
 
 - `timestamp`: timestamps in seconds (10-digit).
-- `label`: `0` for normal points, `1` for anomaly points.
-- Labels are used for evaluation and are not required in the production environment.
+- `label` (optional): `0` for normal points, `1` for anomaly points.
+- Labels are used only for evaluation and are not required in model training and inference.
 
 ### Sample Script
 

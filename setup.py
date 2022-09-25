@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='bagel-tensorflow',
-    version='2.0.0',
+    version='2.0.1',
     author='AlumiK',
     author_email='nczzy1997@gmail.com',
     license='MIT',
@@ -21,11 +21,6 @@ setuptools.setup(
         'tensorflow',
         'tensorflow-probability',
     ],
-    extras_require={
-        'dev': [
-            'matplotlib',
-        ],
-    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
