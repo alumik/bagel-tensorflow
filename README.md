@@ -14,8 +14,6 @@ This is an implementation of Bagel in TensorFlow 2. The original PyTorch 0.4 imp
 
 ## Install
 
-### Dependencies
-
 Normally, `pip` will automatically install required PyPI dependencies when you install this package:
 
 - For development use:
@@ -37,13 +35,6 @@ An `environment.yml` is also provided if you prefer `conda` to manage dependenci
 ```
 conda env create -f environment.yml
 ```
-
-### Notes
-
-- Python >= 3.8 and TensorFlow >= 2.4 is required.
-- TensorFlow version is tightly coupled to CUDA and cuDNN so they should be selected carefully.
-- On Windows, TensorFlow 2 requires
-  [the latest VC runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
 ## Run
 
