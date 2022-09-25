@@ -1,6 +1,7 @@
 import uuid
+import pathlib
 import numpy as np
-import tensorflow as tf
+import pandas as pd
 
 from typing import *
 
@@ -121,9 +122,9 @@ class KPIDataset:
         self._label_windows = self._to_windows(kpi.labels)
         self._normal_windows = self._to_windows(1 - kpi.abnormal)
         self._one_hot_time = self._get_time_code(kpi, time_feature)
-        self._time_code = []
-        self._values = []
-        self._normal = []
+        self.time_code = []
+        self.values = []
+        self.normal = []
 
         for i in range(len(self._value_windows)):
             values = np.copy(self._value_windows[i]).astype(np.float32)
@@ -135,9 +136,13 @@ class KPIDataset:
             values[np.logical_and(normal == 0, labels == 0)] = 0.
             time_code = self._one_hot_time[i + self._window_size - 1]
 
-            self._time_code.append(time_code)
-            self._values.append(values)
-            self._normal.append(normal)
+            self.time_code.append(time_code)
+            self.values.append(values)
+            self.normal.append(normal)
+
+        self.values = np.asarray(self.values, dtype=np.float32)
+        self.time_code = np.asarray(self.time_code, dtype=np.float32)
+        self.normal = np.asarray(self.normal, dtype=np.float32)
 
     def _to_windows(self, series: np.ndarray) -> np.ndarray:
         return np.lib.stride_tricks.as_strided(
@@ -173,17 +178,15 @@ class KPIDataset:
     def _one_hot(indices: Sequence, depth: int) -> np.ndarray:
         return np.eye(depth)[indices]
 
-    @property
-    def time_code(self) -> np.ndarray:
-        return np.asarray(self._time_code, dtype=np.float32)
+    def __len__(self):
+        return len(self.values)
 
-    @property
-    def values(self) -> np.ndarray:
-        return np.asarray(self._values, dtype=np.float32)
 
-    @property
-    def normal(self) -> np.ndarray:
-        return np.asarray(self._normal, dtype=np.float32)
-
-    def to_tensorflow(self) -> tf.data.Dataset:
-        return tf.data.Dataset.from_tensor_slices((self.values, self.time_code, self.normal))
+def load_kpi(file: pathlib.Path, **kwargs) -> KPI:
+    df = pd.read_csv(file, **kwargs)
+    return KPI(
+        timestamps=df.timestamp,
+        values=df.value,
+        labels=df.get('label', None),
+        name=file.stem,
+    )

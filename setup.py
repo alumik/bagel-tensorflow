@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='bagel-tensorflow',
-    version='1.7.0',
+    version='2.0.0',
     author='AlumiK',
     author_email='nczzy1997@gmail.com',
     license='MIT',
@@ -31,6 +31,8 @@ setuptools.setup(
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',

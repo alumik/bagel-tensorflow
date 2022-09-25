@@ -11,7 +11,8 @@ def _adjust_scores(labels: np.ndarray,
                    delay: Optional[int] = None,
                    inplace: bool = False) -> np.ndarray:
     if np.shape(scores) != np.shape(labels):
-        raise ValueError('Shape mismatch between labels and scores.')
+        raise ValueError('Shape mismatch between labels and scores.'
+                         f'labels: {np.shape(labels)}, scores: {np.shape(scores)}')
     if delay is None:
         delay = len(scores)
     splits = np.where(labels[1:] != labels[:-1])[0] + 1
@@ -55,7 +56,7 @@ def get_test_results(labels: np.ndarray,
                      scores: np.ndarray,
                      missing: np.ndarray,
                      window_size: int,
-                     delay: Optional[int] = None) -> Dict:
+                     delay: Optional[int] = None) -> Dict[str, float]:
     labels = labels[window_size - 1:]
     scores = scores[window_size - 1:]
     missing = missing[window_size - 1:]
@@ -63,21 +64,21 @@ def get_test_results(labels: np.ndarray,
     adjusted_labels, adjusted_scores = _ignore_missing([labels, adjusted_scores], missing=missing)
     threshold, precision, recall, f1score = _best_f1score(labels=adjusted_labels, scores=adjusted_scores)
     return {
-        'threshold': threshold,
-        'precision': precision,
-        'recall': recall,
-        'f1score': f1score,
+        'threshold': float(threshold),
+        'precision': float(precision),
+        'recall': float(recall),
+        'f1score': float(f1score),
     }
 
 
 class KPIStats:
 
     def __init__(self, kpi: bagel.data.KPI):
-        self.num_points = len(kpi.values)
-        self.num_missing = len(kpi.missing[kpi.missing == 1])
-        self.num_anomaly = len(kpi.labels[kpi.labels == 1])
-        self.missing_rate = self.num_missing / self.num_points
-        self.anomaly_rate = self.num_anomaly / self.num_points
+        self.length = len(kpi.values)
+        self.n_missing = len(kpi.missing[kpi.missing == 1])
+        self.n_anomaly = len(kpi.labels[kpi.labels == 1])
+        self.missing_rate = self.n_missing / self.length
+        self.anomaly_rate = self.n_anomaly / self.length
 
 
 def get_kpi_stats(*kpis: bagel.data.KPI) -> Tuple[KPIStats, ...]:

@@ -35,7 +35,7 @@ def main():
 
     plt.figure(figsize=fig_size, dpi=dpi)
     for i in range(total := len(file_list)):
-        kpi = bagel.utils.load_kpi(file_list[i])
+        kpi = bagel.data.load_kpi(file_list[i])
         print(f'Plotting: ({i + 1}/{total}) {kpi.name}')
         kpi, _, _ = kpi.standardize()
         kpi.complete_timestamp()

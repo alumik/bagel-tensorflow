@@ -1,7 +1,8 @@
 # Bagel
 
-![python-3.8](https://img.shields.io/badge/python-3.8-blue)
-![version-1.7.0](https://img.shields.io/badge/version-1.7.0-blue)
+![version-2.0.0](https://img.shields.io/badge/version-2.0.0-blue)
+![python-3.10](https://img.shields.io/badge/python-3.10-blue?logo=python&logoColor=white)
+![TensorFlow 2.10](https://img.shields.io/badge/TensorFlow-2.10-FF6F00?logo=tensorflow&logoColor=white)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/AlumiK/bagel-tensorflow/blob/main/LICENSE)
 
 <img width="140" alt="Bagel Logo" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg"/>
@@ -39,7 +40,7 @@ conda env create -f environment.yml
 
 ### Notes
 
-- TensorFlow >= 2.4 is required.
+- Python >= 3.8 and TensorFlow >= 2.4 is required.
 - TensorFlow version is tightly coupled to CUDA and cuDNN so they should be selected carefully.
 - On Windows, TensorFlow 2 requires
   [the latest VC runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
@@ -82,36 +83,67 @@ To prepare the data:
 ```python
 import bagel
 
-kpi = bagel.utils.load_kpi('kpi_data.csv')
+kpi = bagel.data.load_kpi('kpi_data.csv')
 kpi.complete_timestamp()
 train_kpi, valid_kpi, test_kpi = kpi.split((0.49, 0.21, 0.3))
 train_kpi, mean, std = train_kpi.standardize()
 valid_kpi, _, _ = valid_kpi.standardize(mean=mean, std=std)
 test_kpi, _, _ = test_kpi.standardize(mean=mean, std=std)
+
+dataset = bagel.data.KPIDataset(
+    train_kpi.use_labels(0.),
+    window_size=window_size,
+    time_feature=time_feature,
+    missing_injection_rate=missing_injection_rate,
+)
+valid_dataset = bagel.data.KPIDataset(
+    valid_kpi,
+    window_size=window_size,
+    time_feature=time_feature,
+)
+test_dataset = bagel.data.KPIDataset(
+    test_kpi.no_labels(),
+    window_size=window_size,
+    time_feature=time_feature,
+)
 ```
 
-To construct a Bagel model, train the model, and use the trained model for prediction:
+To build and train a Bagel model:
 
 ```python
-import bagel
-
-model = bagel.Bagel()
-model.fit(kpi=train_kpi.use_labels(0.), validation_kpi=valid_kpi, epochs=epochs)
-anomaly_scores = model.predict(test_kpi)
+model = bagel.Bagel(
+    window_size=window_size,
+    hidden_dims=hidden_dims,
+    latent_dim=latent_dim,
+    dropout_rate=dropout_rate,
+)
+lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
+    initial_learning_rate=learning_rate,
+    decay_steps=10 * len(dataset) // batch_size,
+    decay_rate=0.75,
+    staircase=True
+)
+optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler, clipnorm=clipnorm)
+model.compile(optimizer=optimizer)
+model.fit(
+    x=[dataset.values, dataset.time_code, dataset.normal],
+    batch_size=batch_size,
+    epochs=epochs,
+    validation_data=([valid_dataset.values, valid_dataset.time_code, valid_dataset.normal], None),
+    validation_batch_size=batch_size,
+)
 ```
 
-To save and restore a trained model:
+To use the trained model for prediction:
 
 ```python
-# To save a trained model
-model.save(prefix)
-
-# To load a pre-trained model
-import bagel
-
-model = bagel.Bagel()
-model.load(prefix)
+anomaly_scores = model.predict(
+    x=[test_dataset.values, test_dataset.time_code, test_dataset.normal],
+    batch_size=batch_size,
+)
 ```
+
+Use `tf.keras.Model.save` API to save the model.
 
 ## Citation
 
