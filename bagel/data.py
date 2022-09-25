@@ -2,7 +2,7 @@ import uuid
 import numpy as np
 import tensorflow as tf
 
-from typing import Sequence, Tuple, Optional
+from typing import *
 
 
 class KPI:
@@ -26,11 +26,7 @@ class KPI:
         else:
             self.missing = np.asarray(missing, dtype=np.int)
 
-        if name is None:
-            self.name = str(uuid.uuid4())
-        else:
-            self.name = name
-
+        self.name = name or str(uuid.uuid4())
         self.labels[self.missing == 1] = 0
 
     @property
@@ -43,10 +39,10 @@ class KPI:
         intervals = np.unique(np.diff(timestamp_sorted))
         interval = np.min(intervals)
         if interval == 0:
-            raise ValueError('Duplicated values in `timestamp`')
+            raise ValueError('Duplicate timestamps are not allowed.')
         for itv in intervals:
             if itv % interval != 0:
-                raise ValueError('Not all intervals in `timestamp` are multiples of the minimum interval')
+                raise ValueError('Timestamps are not evenly spaced.')
 
         length = (timestamp_sorted[-1] - timestamp_sorted[0]) // interval + 1
         new_timestamps = np.arange(timestamp_sorted[0], timestamp_sorted[-1] + interval, interval, dtype=np.int)
@@ -66,22 +62,26 @@ class KPI:
 
     def split(self, ratios: Sequence) -> Tuple['KPI', ...]:
         if abs(1.0 - sum(ratios)) > 1e-4:
-            raise ValueError('The sum of `ratios` must be 1')
+            raise ValueError('`ratios` must sum to 1.')
         partition = np.asarray(np.cumsum(np.asarray(ratios, dtype=np.float32)) * len(self.values), dtype=np.int)
         partition[-1] = len(self.values)
         partition = np.concatenate(([0], partition))
         ret = []
         for low, high in zip(partition[:-1], partition[1:]):
-            ret.append(KPI(timestamps=self.timestamps[low:high],
-                           values=self.values[low:high],
-                           labels=self.labels[low:high],
-                           missing=self.missing[low:high],
-                           name=self.name))
+            ret.append(
+                KPI(
+                    timestamps=self.timestamps[low:high],
+                    values=self.values[low:high],
+                    labels=self.labels[low:high],
+                    missing=self.missing[low:high],
+                    name=self.name,
+                )
+            )
         return tuple(ret)
 
     def standardize(self, mean: Optional[float] = None, std: Optional[float] = None) -> Tuple['KPI', float, float]:
         if (mean is None) != (std is None):
-            raise ValueError('`mean` and `std` must be both None or not None')
+            raise ValueError('`mean` and `std` must be both None or not None.')
         if mean is None:
             mean = self.values.mean()
             std = self.values.std()
@@ -91,10 +91,15 @@ class KPI:
 
     def use_labels(self, rate: float = 1.) -> 'KPI':
         if not 0. <= rate <= 1.:
-            raise ValueError('`rate` must be in [0, 1]')
+            raise ValueError('`rate` must be in [0, 1].')
         if rate == 0.:
-            return KPI(timestamps=self.timestamps, values=self.values, labels=None, missing=self.missing,
-                       name=self.name)
+            return KPI(
+                timestamps=self.timestamps,
+                values=self.values,
+                labels=None,
+                missing=self.missing,
+                name=self.name,
+            )
         if rate == 1.:
             return self
         labels = np.copy(self.labels)
@@ -156,7 +161,7 @@ class KPIDataset:
                 elif feature == 'S':
                     time_code.append(self._one_hot(((kpi.timestamps % 86400) % 3600) % 60, depth=60))
                 else:
-                    raise ValueError(f'Unsupported time feature: %{feature}')
+                    raise ValueError(f'Invalid time feature `{feature}`.')
         if time_code:
             time_code = np.concatenate(time_code, axis=-1)
         else:

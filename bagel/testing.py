@@ -1,8 +1,9 @@
-import bagel
 import numpy as np
 
+import bagel
+
 from sklearn.metrics import precision_recall_curve
-from typing import Sequence, Tuple, Dict, Optional
+from typing import *
 
 
 def _adjust_scores(labels: np.ndarray,
@@ -10,7 +11,7 @@ def _adjust_scores(labels: np.ndarray,
                    delay: Optional[int] = None,
                    inplace: bool = False) -> np.ndarray:
     if np.shape(scores) != np.shape(labels):
-        raise ValueError('`labels` and `scores` must have same shape')
+        raise ValueError('Shape mismatch between labels and scores.')
     if delay is None:
         delay = len(scores)
     splits = np.where(labels[1:] != labels[:-1])[0] + 1
@@ -61,10 +62,12 @@ def get_test_results(labels: np.ndarray,
     adjusted_scores = _adjust_scores(labels=labels, scores=scores, delay=delay)
     adjusted_labels, adjusted_scores = _ignore_missing([labels, adjusted_scores], missing=missing)
     threshold, precision, recall, f1score = _best_f1score(labels=adjusted_labels, scores=adjusted_scores)
-    return {'threshold': threshold,
-            'precision': precision,
-            'recall': recall,
-            'f1score': f1score}
+    return {
+        'threshold': threshold,
+        'precision': precision,
+        'recall': recall,
+        'f1score': f1score,
+    }
 
 
 class KPIStats:
