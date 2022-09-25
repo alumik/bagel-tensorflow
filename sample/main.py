@@ -59,7 +59,7 @@ def main(batch_size: int = 256,
             staircase=True
         )
         optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler, clipnorm=clipnorm)
-        model.compile(optimizer=optimizer)
+        model.compile(optimizer=optimizer, jit_compile=True)
 
         print('Training...')
         model.fit(

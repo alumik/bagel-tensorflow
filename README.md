@@ -1,6 +1,6 @@
 # Bagel
 
-![version-2.0.1](https://img.shields.io/badge/version-2.0.1-blue)
+![version-2.0.2](https://img.shields.io/badge/version-2.0.2-blue)
 ![python-3.10](https://img.shields.io/badge/python-3.10-blue?logo=python&logoColor=white)
 ![TensorFlow 2.10](https://img.shields.io/badge/TensorFlow-2.10-FF6F00?logo=tensorflow&logoColor=white)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/alumik/bagel-tensorflow/blob/main/LICENSE)
@@ -115,7 +115,7 @@ lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
     staircase=True
 )
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler, clipnorm=clipnorm)
-model.compile(optimizer=optimizer)
+model.compile(optimizer=optimizer, jit_compile=True)
 model.fit(
     x=[dataset.values, dataset.time_code, dataset.normal],
     batch_size=batch_size,
