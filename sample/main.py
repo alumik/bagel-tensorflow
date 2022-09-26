@@ -72,7 +72,7 @@ def main(input_path: str = 'data',
         )
         print(json.dumps(results, indent=2))
 
-        stats = bagel.evaluation.kpi_stats([kpi, test_kpi])
+        stats = bagel.data.kpi_stats([kpi, test_kpi])
         output_dict = {
             'name': kpi.name,
             'results': results,

@@ -190,3 +190,15 @@ def load_kpi(file: pathlib.Path, **kwargs) -> KPI:
         labels=df.get('label', None),
         name=file.stem,
     )
+
+
+def kpi_stats(kpis: Sequence[KPI]) -> List[Dict[str, Any]]:
+    return [
+        {
+            'length': len(kpi.values),
+            'n_missing': len(kpi.missing[kpi.missing == 1]),
+            'n_anomaly': len(kpi.labels[kpi.labels == 1]),
+            'missing_rate': len(kpi.missing[kpi.missing == 1]) / len(kpi.values),
+            'anomaly_rate': len(kpi.labels[kpi.labels == 1]) / len(kpi.values),
+        } for kpi in kpis
+    ]
