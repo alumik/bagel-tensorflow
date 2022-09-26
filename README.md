@@ -74,29 +74,20 @@ To prepare the data:
 ```python
 import bagel
 
-kpi = bagel.data.load_kpi('kpi_data.csv')
+kpi = bagel.data.load_kpi('kpi.csv')
 kpi.complete_timestamp()
 train_kpi, valid_kpi, test_kpi = kpi.split((0.49, 0.21, 0.3))
 train_kpi, mean, std = train_kpi.standardize()
 valid_kpi, _, _ = valid_kpi.standardize(mean=mean, std=std)
 test_kpi, _, _ = test_kpi.standardize(mean=mean, std=std)
-
 dataset = bagel.data.KPIDataset(
     train_kpi.use_labels(0.),
     window_size=window_size,
     time_feature=time_feature,
     missing_injection_rate=missing_injection_rate,
 )
-valid_dataset = bagel.data.KPIDataset(
-    valid_kpi,
-    window_size=window_size,
-    time_feature=time_feature,
-)
-test_dataset = bagel.data.KPIDataset(
-    test_kpi.no_labels(),
-    window_size=window_size,
-    time_feature=time_feature,
-)
+valid_dataset = bagel.data.KPIDataset(valid_kpi, window_size=window_size, time_feature=time_feature)
+test_dataset = bagel.data.KPIDataset(test_kpi.no_labels(), window_size=window_size, time_feature=time_feature)
 ```
 
 To build and train a Bagel model:
