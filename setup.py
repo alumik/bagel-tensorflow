@@ -5,14 +5,14 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='bagel-tensorflow',
-    version='2.0.2',
-    author='AlumiK',
+    version='2.1.0',
+    author='Zhenyu Zhong',
     author_email='nczzy1997@gmail.com',
     license='MIT',
     description='Implementation of Bagel in TensorFlow 2',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/AlumiK/bagel-tensorflow',
+    url='https://github.com/alumik/bagel-tensorflow',
     packages=setuptools.find_packages(include=['bagel', 'bagel.*']),
     platforms='any',
     install_requires=[
@@ -33,5 +33,5 @@ setuptools.setup(
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    python_requires='~=3.8',
+    python_requires='>=3.8',
 )

@@ -2,8 +2,8 @@ import numpy as np
 
 import bagel
 
-from sklearn.metrics import precision_recall_curve
 from typing import *
+from sklearn.metrics import precision_recall_curve
 
 
 def _adjust_scores(labels: np.ndarray,
@@ -71,18 +71,13 @@ def get_test_results(labels: np.ndarray,
     }
 
 
-class KPIStats:
-
-    def __init__(self, kpi: bagel.data.KPI):
-        self.length = len(kpi.values)
-        self.n_missing = len(kpi.missing[kpi.missing == 1])
-        self.n_anomaly = len(kpi.labels[kpi.labels == 1])
-        self.missing_rate = self.n_missing / self.length
-        self.anomaly_rate = self.n_anomaly / self.length
-
-
-def get_kpi_stats(*kpis: bagel.data.KPI) -> Tuple[KPIStats, ...]:
-    ret = []
-    for kpi in kpis:
-        ret.append(KPIStats(kpi))
-    return tuple(ret)
+def kpi_stats(kpis: Sequence[bagel.data.KPI]) -> List[Dict[str, Any]]:
+    return [
+        {
+            'length': len(kpi.values),
+            'n_missing': len(kpi.missing[kpi.missing == 1]),
+            'n_anomaly': len(kpi.labels[kpi.labels == 1]),
+            'missing_rate': len(kpi.missing[kpi.missing == 1]) / len(kpi.values),
+            'anomaly_rate': len(kpi.labels[kpi.labels == 1]) / len(kpi.values),
+        } for kpi in kpis
+    ]
