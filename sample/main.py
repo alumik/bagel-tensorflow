@@ -52,6 +52,12 @@ def main(input_path: str = 'data',
         )
         optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler, clipnorm=clipnorm)
         model.compile(optimizer=optimizer, jit_compile=True)
+        model.build([
+            (None, dataset.values.shape[1]),
+            (None, dataset.time_code.shape[1]),
+            (None, dataset.normal.shape[1]),
+        ])
+        model.summary()
 
         model.fit(
             x=[dataset.values, dataset.time_code, dataset.normal],
