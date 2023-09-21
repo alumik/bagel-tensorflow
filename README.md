@@ -1,9 +1,9 @@
 # Bagel
 
-![version-2.1.0](https://img.shields.io/badge/version-2.1.0-blue)
-![python-3.10](https://img.shields.io/badge/python-3.10-blue?logo=python&logoColor=white)
-![TensorFlow 2.10](https://img.shields.io/badge/TensorFlow-2.10-FF6F00?logo=tensorflow&logoColor=white)
-[![license-MIT](https://img.shields.io/badge/license-MIT-green)](https://github.com/alumik/bagel-tensorflow/blob/main/LICENSE)
+![version-2.2.0](https://img.shields.io/badge/version-2.2.0-blue)
+![python->=3.10](https://img.shields.io/badge/python->=3.10-blue?logo=python&logoColor=white)
+![TensorFlow 2.13](https://img.shields.io/badge/TensorFlow-2.13-FF6F00?logo=tensorflow&logoColor=white)
+![license-MIT](https://img.shields.io/badge/license-MIT-green)
 
 <img width="140" alt="Bagel Logo" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg"/>
 
@@ -56,16 +56,12 @@ timestamp,   value,       label
 
 - `timestamp`: timestamps in seconds (10-digit).
 - `label` (optional): `0` for normal points, `1` for anomaly points.
-- Labels are used only for evaluation and are not required in model training and inference.
+- Labels are used only for evaluation and are not required in model training and inference. However, if labels are
+  provided, the model can still take labeled data to improve the performance.
 
 ### Sample Script
 
 A sample script can be found at `sample/main.py`:
-
-```
-cd sample
-python main.py
-```
 
 ## Usage
 

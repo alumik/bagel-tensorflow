@@ -35,11 +35,13 @@ class AutoencoderLayer(tf.keras.layers.Layer):
 
 class ConditionalVariationalAutoencoder(tf.keras.layers.Layer):
 
-    def __init__(self,
-                 input_dim: int,
-                 hidden_dims: Sequence[int],
-                 latent_dim: int,
-                 dropout_rate: float):
+    def __init__(
+            self,
+            input_dim: int,
+            hidden_dims: Sequence[int],
+            latent_dim: int,
+            dropout_rate: float,
+    ):
         super().__init__()
         self._input_dim = input_dim
         self._hidden_dims = hidden_dims
@@ -75,12 +77,14 @@ class ConditionalVariationalAutoencoder(tf.keras.layers.Layer):
 
 class Bagel(tf.keras.Model):
 
-    def __init__(self,
-                 window_size: int = 120,
-                 hidden_dims: Sequence = (100, 100),
-                 latent_dim: int = 8,
-                 dropout_rate: float = 0.1,
-                 **kwargs):
+    def __init__(
+            self,
+            window_size: int = 120,
+            hidden_dims: Sequence = (100, 100),
+            latent_dim: int = 8,
+            dropout_rate: float = 0.1,
+            **kwargs,
+    ):
         super().__init__(**kwargs)
         self._window_size = window_size
         self._hidden_dims = hidden_dims
@@ -95,12 +99,14 @@ class Bagel(tf.keras.Model):
         self._loss_tracker = tf.keras.metrics.Mean(name='loss')
 
     @staticmethod
-    def _m_elbo(x: tf.Tensor,
-                z: tf.Tensor,
-                normal: tf.Tensor,
-                q_zx: tfp.distributions.Normal,
-                p_z: tfp.distributions.Normal,
-                p_xz: tfp.distributions.Normal) -> tf.Tensor:
+    def _m_elbo(
+            x: tf.Tensor,
+            z: tf.Tensor,
+            normal: tf.Tensor,
+            q_zx: tfp.distributions.Normal,
+            p_z: tfp.distributions.Normal,
+            p_xz: tfp.distributions.Normal,
+    ) -> tf.Tensor:
         x = tf.expand_dims(x, 0)
         normal = tf.expand_dims(normal, 0)
         log_p_xz = p_xz.log_prob(x)

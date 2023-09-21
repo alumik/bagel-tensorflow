@@ -1,15 +1,17 @@
 import numpy as np
 
-import bagel
-
 from typing import *
 from sklearn.metrics import precision_recall_curve
 
+import bagel
 
-def _adjust_scores(labels: np.ndarray,
-                   scores: np.ndarray,
-                   delay: Optional[int] = None,
-                   inplace: bool = False) -> np.ndarray:
+
+def _adjust_scores(
+        labels: np.ndarray,
+        scores: np.ndarray,
+        delay: int | None = None,
+        inplace: bool = False,
+) -> np.ndarray:
     if np.shape(scores) != np.shape(labels):
         raise ValueError('Shape mismatch between labels and scores.'
                          f'labels: {np.shape(labels)}, scores: {np.shape(scores)}')
@@ -33,7 +35,7 @@ def _adjust_scores(labels: np.ndarray,
     return adjusted_scores
 
 
-def _ignore_missing(series_list: Sequence, missing: np.ndarray) -> Tuple[np.ndarray, ...]:
+def _ignore_missing(series_list: Sequence, missing: np.ndarray) -> tuple[np.ndarray, ...]:
     ret = []
     for series in series_list:
         series = np.copy(series)
@@ -41,7 +43,7 @@ def _ignore_missing(series_list: Sequence, missing: np.ndarray) -> Tuple[np.ndar
     return tuple(ret)
 
 
-def _best_f1score(labels: np.ndarray, scores: np.ndarray) -> Tuple[float, float, float, float]:
+def _best_f1score(labels: np.ndarray, scores: np.ndarray) -> tuple[float, float, float, float]:
     precision, recall, thresholds = precision_recall_curve(y_true=labels, probas_pred=scores)
     f1score = 2 * precision * recall / np.clip(precision + recall, a_min=1e-8, a_max=None)
 
@@ -52,11 +54,13 @@ def _best_f1score(labels: np.ndarray, scores: np.ndarray) -> Tuple[float, float,
     return best_threshold, best_precision, best_recall, np.max(f1score)
 
 
-def get_test_results(labels: np.ndarray,
-                     scores: np.ndarray,
-                     missing: np.ndarray,
-                     window_size: int,
-                     delay: Optional[int] = None) -> Dict[str, float]:
+def get_test_results(
+        labels: np.ndarray,
+        scores: np.ndarray,
+        missing: np.ndarray,
+        window_size: int,
+        delay: int | None = None,
+) -> dict[str, float]:
     labels = labels[window_size - 1:]
     scores = scores[window_size - 1:]
     missing = missing[window_size - 1:]

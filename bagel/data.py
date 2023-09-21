@@ -8,12 +8,14 @@ from typing import *
 
 class KPI:
 
-    def __init__(self,
-                 timestamps: Sequence,
-                 values: Sequence,
-                 labels: Optional[Sequence] = None,
-                 missing: Optional[Sequence] = None,
-                 name: Optional[str] = None):
+    def __init__(
+            self,
+            timestamps: Sequence | np.ndarray,
+            values: Sequence | np.ndarray,
+            labels: Sequence | np.ndarray | None = None,
+            missing: Sequence | np.ndarray | None = None,
+            name: str | None = None,
+    ):
         self.timestamps = np.asarray(timestamps, dtype=np.int)
         self.values = np.asarray(values, dtype=np.float32)
 
@@ -61,7 +63,7 @@ class KPI:
         self.labels = new_labels
         self.missing = new_missing
 
-    def split(self, ratios: Sequence) -> Tuple['KPI', ...]:
+    def split(self, ratios: Sequence | np.ndarray) -> tuple['KPI', ...]:
         if abs(1.0 - sum(ratios)) > 1e-4:
             raise ValueError('`ratios` must sum to 1.')
         partition = np.asarray(np.cumsum(np.asarray(ratios, dtype=np.float32)) * len(self.values), dtype=np.int)
@@ -80,7 +82,7 @@ class KPI:
             )
         return tuple(ret)
 
-    def standardize(self, mean: Optional[float] = None, std: Optional[float] = None) -> Tuple['KPI', float, float]:
+    def standardize(self, mean: float | None = None, std: float | None = None) -> tuple['KPI', float, float]:
         if (mean is None) != (std is None):
             raise ValueError('`mean` and `std` must be both None or not None.')
         if mean is None:
@@ -115,7 +117,7 @@ class KPI:
 
 class KPIDataset:
 
-    def __init__(self, kpi: KPI, window_size: int, time_feature: Optional[str], missing_injection_rate: float = 0.):
+    def __init__(self, kpi: KPI, window_size: int, time_feature: str | None, missing_injection_rate: float = 0.):
         self._window_size = window_size
         self._missing_injection_rate = missing_injection_rate
         self._value_windows = self._to_windows(kpi.values)
@@ -175,7 +177,7 @@ class KPIDataset:
         return time_code
 
     @staticmethod
-    def _one_hot(indices: Sequence, depth: int) -> np.ndarray:
+    def _one_hot(indices: Sequence | np.ndarray, depth: int) -> np.ndarray:
         return np.eye(depth)[indices]
 
     def __len__(self):
@@ -192,7 +194,7 @@ def load_kpi(file: pathlib.Path, **kwargs) -> KPI:
     )
 
 
-def kpi_stats(kpis: Sequence[KPI]) -> List[Dict[str, Any]]:
+def kpi_stats(kpis: Sequence[KPI]) -> list[dict[str, Any]]:
     return [
         {
             'length': len(kpi.values),

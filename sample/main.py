@@ -2,23 +2,25 @@ import json
 import pathlib
 import tensorflow as tf
 
-import bagel
-
 from typing import *
 
+import bagel
 
-def main(input_path: str = 'data',
-         output_path: str = 'out/bagel',
-         batch_size: int = 256,
-         epochs: int = 50,
-         learning_rate: float = 1e-3,
-         window_size: int = 120,
-         time_feature: Optional[str] = 'MHw',
-         hidden_dims: Sequence = (100, 100),
-         latent_dim: int = 8,
-         dropout_rate: float = 0.1,
-         clipnorm: float = 10.0,
-         missing_injection_rate: float = 0.01):
+
+def main(
+        input_path: str = 'data',
+        output_path: str = 'out/bagel',
+        batch_size: int = 256,
+        epochs: int = 50,
+        learning_rate: float = 1e-3,
+        window_size: int = 120,
+        time_feature: str | None = 'MHw',
+        hidden_dims: Sequence[int] = (100, 100),
+        latent_dim: int = 8,
+        dropout_rate: float = 0.1,
+        clipnorm: float = 10.0,
+        missing_injection_rate: float = 0.01,
+):
     output_path = pathlib.Path(output_path)
     output_path.mkdir(parents=True, exist_ok=True)
     for file in pathlib.Path(input_path).iterdir():
