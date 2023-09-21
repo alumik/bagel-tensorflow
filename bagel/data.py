@@ -16,25 +16,25 @@ class KPI:
             missing: Sequence | np.ndarray | None = None,
             name: str | None = None,
     ):
-        self.timestamps = np.asarray(timestamps, dtype=np.int)
+        self.timestamps = np.asarray(timestamps, dtype=int)
         self.values = np.asarray(values, dtype=np.float32)
 
         if labels is None:
-            self.labels = np.zeros(np.shape(values), dtype=np.int)
+            self.labels = np.zeros(np.shape(values), dtype=int)
         else:
-            self.labels = np.asarray(labels, dtype=np.int)
+            self.labels = np.asarray(labels, dtype=int)
 
         if missing is None:
-            self.missing = np.zeros(np.shape(values), dtype=np.int)
+            self.missing = np.zeros(np.shape(values), dtype=int)
         else:
-            self.missing = np.asarray(missing, dtype=np.int)
+            self.missing = np.asarray(missing, dtype=int)
 
         self.name = name or str(uuid.uuid4())
         self.labels[self.missing == 1] = 0
 
     @property
     def abnormal(self) -> np.ndarray:
-        return np.logical_or(self.missing, self.labels).astype(np.int)
+        return np.logical_or(self.missing, self.labels).astype(int)
 
     def complete_timestamp(self):
         src_idx = np.argsort(self.timestamps)
@@ -48,12 +48,12 @@ class KPI:
                 raise ValueError('Timestamps are not evenly spaced.')
 
         length = (timestamp_sorted[-1] - timestamp_sorted[0]) // interval + 1
-        new_timestamps = np.arange(timestamp_sorted[0], timestamp_sorted[-1] + interval, interval, dtype=np.int)
+        new_timestamps = np.arange(timestamp_sorted[0], timestamp_sorted[-1] + interval, interval, dtype=int)
         new_values = np.zeros([length], dtype=self.values.dtype)
         new_labels = np.zeros([length], dtype=self.labels.dtype)
         new_missing = np.ones([length], dtype=self.missing.dtype)
 
-        dst_idx = np.asarray((timestamp_sorted - timestamp_sorted[0]) // interval, dtype=np.int)
+        dst_idx = np.asarray((timestamp_sorted - timestamp_sorted[0]) // interval, dtype=int)
         new_values[dst_idx] = self.values[src_idx]
         new_labels[dst_idx] = self.labels[src_idx]
         new_missing[dst_idx] = self.missing[src_idx]
@@ -66,7 +66,7 @@ class KPI:
     def split(self, ratios: Sequence | np.ndarray) -> tuple['KPI', ...]:
         if abs(1.0 - sum(ratios)) > 1e-4:
             raise ValueError('`ratios` must sum to 1.')
-        partition = np.asarray(np.cumsum(np.asarray(ratios, dtype=np.float32)) * len(self.values), dtype=np.int)
+        partition = np.asarray(np.cumsum(np.asarray(ratios, dtype=np.float32)) * len(self.values), dtype=int)
         partition[-1] = len(self.values)
         partition = np.concatenate(([0], partition))
         ret = []
@@ -130,8 +130,8 @@ class KPIDataset:
 
         for i in range(len(self._value_windows)):
             values = np.copy(self._value_windows[i]).astype(np.float32)
-            labels = np.copy(self._label_windows[i]).astype(np.int)
-            normal = np.copy(self._normal_windows[i]).astype(np.int)
+            labels = np.copy(self._label_windows[i]).astype(int)
+            normal = np.copy(self._normal_windows[i]).astype(int)
 
             injected_missing = np.random.binomial(1, self._missing_injection_rate, np.shape(values[normal == 1]))
             normal[normal == 1] = 1 - injected_missing
