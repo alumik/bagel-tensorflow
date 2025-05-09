@@ -71,15 +71,13 @@ class KPI:
         partition = np.concatenate(([0], partition))
         ret = []
         for low, high in zip(partition[:-1], partition[1:]):
-            ret.append(
-                KPI(
+            ret.append(KPI(
                     timestamps=self.timestamps[low:high],
                     values=self.values[low:high],
                     labels=self.labels[low:high],
                     missing=self.missing[low:high],
                     name=self.name,
-                )
-            )
+            ))
         return tuple(ret)
 
     def standardize(self, mean: float | None = None, std: float | None = None) -> tuple['KPI', float, float]:

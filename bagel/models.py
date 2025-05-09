@@ -24,6 +24,11 @@ class AutoencoderLayer(tf.keras.layers.Layer):
         std = tf.math.softplus(self._std(x)) + 1e-6
         return mean, std
 
+    def build(self, input_shape):
+        self._hidden.build(input_shape)
+        self._mean.build((None, self._hidden_dims[-1]))
+        self._std.build((None, self._hidden_dims[-1]))
+
     def get_config(self):
         config = {
             'hidden_dims': self._hidden_dims,
@@ -63,6 +68,11 @@ class ConditionalVariationalAutoencoder(tf.keras.layers.Layer):
         x_mean, x_std = self._decoder(tf.concat([z, y], axis=-1))
         p_xz = tfp.distributions.Normal(x_mean, x_std)
         return q_zx, p_xz, p_z, z
+
+    def build(self, input_shape):
+        x_shape, y_shape = input_shape
+        self._encoder.build((None, x_shape[-1] + y_shape[-1]))
+        self._decoder.build((1, None, self._latent_dim + y_shape[-1]))
 
     def get_config(self):
         config = {
@@ -130,7 +140,8 @@ class Bagel(tf.keras.Model):
             q_zx, p_xz, p_z, z = self._cvae([x, y])
             loss = -self._m_elbo(x, z, normal, q_zx, p_z, p_xz)
             loss += tf.add_n(self._cvae.losses)
-        self.optimizer.minimize(loss, self._cvae.trainable_weights, tape=tape)
+        grads = tape.gradient(loss, self._cvae.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads, self._cvae.trainable_weights))
         self._loss_tracker.update_state(loss)
         return {'loss': self._loss_tracker.result()}
 
@@ -158,6 +169,9 @@ class Bagel(tf.keras.Model):
     @property
     def metrics(self):
         return [self._loss_tracker]
+
+    def build(self, input_shape):
+        self._cvae.build(input_shape[:-1])
 
     def get_config(self):
         config = {

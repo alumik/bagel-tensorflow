@@ -3,8 +3,6 @@ import numpy as np
 from typing import *
 from sklearn.metrics import precision_recall_curve
 
-import bagel
-
 
 def _adjust_scores(
         labels: np.ndarray,
@@ -54,7 +52,7 @@ def _best_f1score(labels: np.ndarray, scores: np.ndarray) -> tuple[float, float,
     return best_threshold, best_precision, best_recall, np.max(f1score)
 
 
-def get_test_results(
+def evaluate(
         labels: np.ndarray,
         scores: np.ndarray,
         missing: np.ndarray,

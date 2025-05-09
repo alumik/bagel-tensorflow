@@ -1,0 +1,36 @@
+[project]
+name = "bagel-tensorflow"
+version = "2.3.0"
+description = "Implementation of Bagel in TensorFlow 2"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { text = "MIT" }
+authors = [
+    { name = "Zhenyu Zhong", email = "nczzy1997@gmail.com" }
+]
+dependencies = [
+    "fire",
+    "pandas",
+    "scikit-learn",
+    "tensorflow ~=2.19.0",
+    "tensorflow-probability ~=0.25.0",
+    "tf-keras ~=2.19.0"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+Homepage = "https://github.com/alumik/bagel-tensorflow"
+
+[tool.setuptools.packages.find]
+include = ["bagel", "bagel.*"]

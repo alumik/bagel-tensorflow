@@ -1,9 +1,9 @@
 # Bagel
 
-![version-2.2.0](https://img.shields.io/badge/version-2.2.0-blue)
-![python->=3.10](https://img.shields.io/badge/python->=3.10-blue?logo=python&logoColor=white)
-![TensorFlow 2.13](https://img.shields.io/badge/TensorFlow-2.13-FF6F00?logo=tensorflow&logoColor=white)
-![license-MIT](https://img.shields.io/badge/license-MIT-green)
+![version-2.3.0](https://img.shields.io/badge/version-2.3.0-blue)
+![python->=3.10,<3.13](https://img.shields.io/badge/python->=3.10,<3.13-blue?logo=python&logoColor=white)
+![TensorFlow 2.19](https://img.shields.io/badge/TensorFlow-2.19-FF6F00?logo=tensorflow&logoColor=white)
+![GitHub License](https://img.shields.io/github/license/alumik/bagel-tensorflow)
 
 <img width="140" alt="Bagel Logo" align="right" src="https://www.svgrepo.com/show/275681/bagel.svg"/>
 

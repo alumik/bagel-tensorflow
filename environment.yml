@@ -1,13 +1,16 @@
 name: bagel
 channels:
-  - conda-forge
+  - nvidia
 dependencies:
-  - python=3.11
-  - cudatoolkit=11.8
+  - python=3.12
+  - cuda-version=12.5
+  - cuda=12.5
   - cudnn
   - pip
   - pip:
+    - fire
     - scikit-learn
     - pandas
-    - tensorflow~=2.13.0
-    - tensorflow-probability~=0.21.0
+    - tensorflow~=2.19.0
+    - tensorflow-probability~=0.25.0
+    - tf-keras~=2.19.0

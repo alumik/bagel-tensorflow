@@ -1,8 +1,7 @@
+import fire
 import json
 import pathlib
 import tensorflow as tf
-
-from typing import *
 
 import bagel
 
@@ -15,7 +14,7 @@ def main(
         learning_rate: float = 1e-3,
         window_size: int = 120,
         time_feature: str | None = 'MHw',
-        hidden_dims: Sequence[int] = (100, 100),
+        hidden_dims: tuple[int] = (100, 100),
         latent_dim: int = 8,
         dropout_rate: float = 0.1,
         clipnorm: float = 10.0,
@@ -72,7 +71,7 @@ def main(
             x=[test_dataset.values, test_dataset.time_code, test_dataset.normal],
             batch_size=batch_size,
         )
-        results = bagel.evaluation.get_test_results(
+        results = bagel.evaluation.evaluate(
             labels=test_kpi.labels,
             scores=anomaly_scores,
             missing=test_kpi.missing,
@@ -92,4 +91,4 @@ def main(
 
 
 if __name__ == '__main__':
-    main()
+    fire.Fire(main)
