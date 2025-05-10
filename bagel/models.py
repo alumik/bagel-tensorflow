@@ -28,6 +28,7 @@ class AutoencoderLayer(tf.keras.layers.Layer):
         self._hidden.build(input_shape)
         self._mean.build((None, self._hidden_dims[-1]))
         self._std.build((None, self._hidden_dims[-1]))
+        super().build(input_shape)
 
     def get_config(self):
         config = {
@@ -73,6 +74,8 @@ class ConditionalVariationalAutoencoder(tf.keras.layers.Layer):
         x_shape, y_shape = input_shape
         self._encoder.build((None, x_shape[-1] + y_shape[-1]))
         self._decoder.build((1, None, self._latent_dim + y_shape[-1]))
+        self._dropout.build((None, y_shape[-1]))
+        super().build(input_shape)
 
     def get_config(self):
         config = {
@@ -172,6 +175,7 @@ class Bagel(tf.keras.Model):
 
     def build(self, input_shape):
         self._cvae.build(input_shape[:-1])
+        super().build(input_shape)
 
     def get_config(self):
         config = {
